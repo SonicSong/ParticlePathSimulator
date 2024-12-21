@@ -1,7 +1,8 @@
 [package]
 name = "openTRIM"
+authors = ["Robert Starosta (Sonic Song)"]
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-uom = "0.36.0"
+#uom = "0.36.0"
