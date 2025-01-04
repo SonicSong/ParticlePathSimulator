@@ -8,28 +8,29 @@ const ELECTRON_CHARGE: f64 = 1.602176634e-19; // C - elementary charge
 const VACUUM_PERMITTIVITY:f64 = 8.8541878188e-12; // F/m - electric constant
 const MOLAR_MASS: f64 = 0.18384;
 const BETA: f64 = 0.7;
+const I: f64 = 727.0;
 
 pub fn low_energies_calc() {
-    println!("{}", fpi_na_zp());
-    println!("{}", etwo_by_fpi());
-    println!("{}", ztwo_by_betatwo());
-    let de_dx: f64 = fpi_na_zp() * etwo_by_fpi() * ztwo_by_betatwo();
-    println!("dE/dx: {}", de_dx);
-}
+    println!("{:.20}", fpi_na_zp());
+    println!("{:.20}", etwo_by_fpi());
+    println!("{:.20}", ztwo_by_betatwo());
+    println!("{:.20}", twom_e_ctwo_betatwo_tmax());
+    let de_dx: f64 = fpi_na_zp() * etwo_by_fpi() * ztwo_by_betatwo() * twom_e_ctwo_betatwo_tmax();
+    println!("dE/dx: {:.20}", de_dx);}
 
 // 4pi N_A Z_p / A m_m m_e c²
 fn fpi_na_zp() -> f64 {
     const TUNGSTEN : (f64, f64, f64) = (19.3e-3, 74.0, 183.84);
     let (atom_density, atom_number, mass_number) = TUNGSTEN;
     let top_calc: f64 = 4.0 * PI_NUMBER * AVOGDRO_CONST * atom_number * atom_density;
-    let bottom_calc : f64 = mass_number * MOLAR_MASS * ELECTRON_MASS * ((0.7 * LIGHT_SPEED) * (0.7 * LIGHT_SPEED));
+    let bottom_calc : f64 = mass_number * MOLAR_MASS * ELECTRON_MASS * ((0.7 * LIGHT_SPEED).powi(2));
     let top_by_bottom: f64 = top_calc / bottom_calc;
     top_by_bottom
 }
 
 // e² / 4pi e_0
 fn etwo_by_fpi() -> f64 {
-    let etwo: f64 = (ELECTRON_CHARGE * ELECTRON_CHARGE);
+    let etwo: f64 = (ELECTRON_CHARGE.powi(2));
     let bot: f64 = 4.0 * PI_NUMBER * VACUUM_PERMITTIVITY;
     let top_by_bot: f64 = (etwo/bot)*(etwo/bot);
     top_by_bot
@@ -38,19 +39,46 @@ fn etwo_by_fpi() -> f64 {
 // z² / Beta²
 fn ztwo_by_betatwo() -> f64 {
     let top: f64 = 1.0 * 1.0; // z^2 dla protonu
-    let bottom: f64 = 0.7 * 0.7; // beta^2
+    let bottom: f64 = BETA.powi(2); // beta^2
     let result: f64 = top / bottom;
     result
 }
 
 fn twom_e_ctwo_betatwo_tmax() -> f64 {
-    let top: f64 = 2.0 * ELECTRON_MASS * (LIGHT_SPEED * LIGHT_SPEED) * (BETA * BETA) * tmax_calculation();
-    let bottom: f64 = 0.7 * 0.7;
-    let result: f64 = top / bottom;
+    let top: f64 = 2.0 * ELECTRON_MASS * (LIGHT_SPEED.powi(2)) * (BETA.powi(2)) * tmax_calculation();
+    let bottom: f64 = (1.0 - (BETA.powi(2))) * (I.powi(2));
+
+    if bottom == 0.0 {
+        panic!("Division by zero in twom_e_ctwo_betatwo_tmax");
+    }
+
+    let ratio: f64 = top / bottom;
+    if ratio <= 0.0 {
+        panic!("Attempting to take log of non-positive value in twom_e_ctwo_betatwo_tmax");
+    }
+
+    let result: f64 = 0.5 * f64::ln(ratio) - (BETA.powi(2)) - (delta() / 2.0);
+    // println!("Top: {}, Bottom: {}, Ratio: {}, Result: {}", top, bottom, ratio, result);
+    result
+}
+
+fn gamma() -> f64 {
+    let gamma: f64 = 1.0 / (1.0 - (BETA.powi(2))).sqrt();
+    gamma
+}
+
+fn delta() -> f64 {
+    // let h_Dirac: f64 = 1.054e-34; //J
+    let hwp_i: f64 = f64::ln((10.0 / 100.0));
+    let beta_gamma:f64 = f64::ln(BETA * gamma());
+    let result: f64 = hwp_i + beta_gamma - 0.5;
     result
 }
 
 fn tmax_calculation() -> f64 {
-    let yotta: f64 = 1.0 / (1.0 - (BETA * BETA).sqrt());
-    let top: f64 = 2.0 * ELECTRON_MASS * (LIGHT_SPEED * LIGHT_SPEED) * (BETA * BETA) * yotta;
+    let m : f64 = 1.672e-27;
+    let top: f64 = 2.0 * ELECTRON_MASS * (LIGHT_SPEED.powi(2)) * (BETA.powi(2)) * (gamma().powi(2));
+    let bot: f64 = 1.0 + (2.0 * gamma() * ELECTRON_MASS) / m;
+    let result: f64 = top / bot;
+    result
 }
