@@ -1,5 +1,7 @@
 use std::f64::consts;
 
+//TODO: Verify data and make sure calculation is correct
+
 const PI_NUMBER: f64 = consts::PI;
 const AVOGDRO_CONST: f64 = 6.02214076e23; //N↓A
 const LIGHT_SPEED: f64 = 2.998e8; // m/s speed of light
