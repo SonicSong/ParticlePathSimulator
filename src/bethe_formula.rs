@@ -12,6 +12,22 @@ const MOLAR_MASS: f64 = 0.18384;
 const BETA: f64 = 0.7;
 const I: f64 = 727.0;
 
+// Zdefiniowanie zmiennych i stałych
+
+// Materiał (krzem):
+// Liczba atomowa Z=14
+// Masa atomowa A=28.0855g/mol
+// Gęstość ρ=2.33g/cm3
+// Średni potencjał wzbudzenia I=173eV
+// Prędkość elektronu:
+// Załóżmy, że elektron ma energię kinetyczną T=10MeV
+// Stałe:
+// Masa elektronu me=0.511MeV/c2
+// Prędkość światła c=3×108m/s
+// Ładunek elementarny e=1.602×10−19
+// Liczba Avogadro NA=6.022×1023mol−1
+
+
 pub fn low_energies_calc() {
     println!("{:.20}", fpi_na_zp());
     println!("{:.20}", etwo_by_fpi());
@@ -42,7 +58,7 @@ fn etwo_by_fpi() -> f64 {
 fn ztwo_by_betatwo() -> f64 {
     let top: f64 = 1.0 * 1.0; // z^2 dla protonu
     let bottom: f64 = BETA.powi(2); // beta^2
-    let result: f64 = top / bottom;
+    let result: f64 = top / bottom; // z^2 / beta^2
     result
 }
 
