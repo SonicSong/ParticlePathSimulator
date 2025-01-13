@@ -34,7 +34,7 @@ pub fn low_energies_calc() {
     println!("{:.20}", ztwo_by_betatwo());
     println!("{:.20}", twom_e_ctwo_betatwo_tmax());
     let de_dx: f64 = fpi_na_zp() * etwo_by_fpi() * ztwo_by_betatwo() * twom_e_ctwo_betatwo_tmax();
-    println!("dE/dx: {:.20}", de_dx);}
+    println!("dE/dx: {:.20} J/cm", de_dx);}
 
 // 4pi N_A Z_p / A m_m m_e c²
 fn fpi_na_zp() -> f64 {
