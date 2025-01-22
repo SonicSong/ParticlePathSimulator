@@ -1,14 +1,13 @@
-# openTRIM
+# ParticlePathSimulator (PPS)
 
-A modern implementation of ion collision simulations in Rust.
+Implementation of Transportation of Ions in Matter in Rust Language .
 
 ## Project Objectives
 
-- [ ] Calculate Stopping power like in TRIM
+- [ ] Calculate Stopping power.
 - [ ] Implement GUI
-- [ ] Implement Particle path like in TRIM
+- [ ] Implement Particle path.
 - [ ] Make it work on Windows, Linux, MacOS. X86_64 and aarch64 CPU's architecture
-
 
 ## Licensing
 
