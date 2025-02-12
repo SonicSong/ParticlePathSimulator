@@ -12,6 +12,10 @@ const MOLAR_MASS: f64 = 0.18384;
 const BETA: f64 = 0.7;
 const I: f64 = 727.0;
 
+impl Variables {
+    const AAAAAAA :f64 = 1.0;
+}
+
 // Zdefiniowanie zmiennych i stałych
 
 // Materiał (krzem):
