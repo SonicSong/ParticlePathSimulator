@@ -1,5 +1,8 @@
 [package]
-name = "openTRIM"
+name = "ParticlePathSimulator"
 authors = ["Robert Starosta (Sonic Song)"]
-version = "0.1.0"
+version = "0.0.1"
 edition = "2021"
+
+[dependencies]
+mendeleev = "0.8.3"

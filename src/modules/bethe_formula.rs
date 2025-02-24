@@ -1,9 +1,15 @@
+use std::any::TypeId;
 use std::f64::consts;
+use mendeleev::{Element, GramPerCubicCentimeter};
+use std::convert::TryFrom;
+use std::convert;
+use modules::periodic;
 
+use crate::modules;
 //TODO: Verify data and make sure calculation is correct
 
 const PI_NUMBER: f64 = consts::PI;
-const AVOGDRO_CONST: f64 = 6.02214076e23; //N↓A
+const AVOGADRO_CONST: f64 = 6.02214076e23; //N↓A
 const LIGHT_SPEED: f64 = 2.998e8; // m/s speed of light
 const ELECTRON_MASS: f64 = 9.1093837e-31; // MeV/c² or kg - electron mass
 const ELECTRON_CHARGE: f64 = 1.602176634e-19; // C - elementary charge
@@ -11,10 +17,6 @@ const VACUUM_PERMITTIVITY:f64 = 8.8541878188e-12; // F/m - electric constant
 const MOLAR_MASS: f64 = 0.18384;
 const BETA: f64 = 0.7;
 const I: f64 = 727.0;
-
-impl Variables {
-    const AAAAAAA :f64 = 1.0;
-}
 
 // Zdefiniowanie zmiennych i stałych
 
@@ -31,23 +33,26 @@ impl Variables {
 // Ładunek elementarny e=1.602×10−19
 // Liczba Avogadro NA=6.022×1023mol−1
 
-
-pub fn low_energies_calc() {
-    println!("{:.20}", fpi_na_zp());
+pub fn low_energies_calc(name_of_element: &str) {
+    println!("{:.20}", fpi_na_zp(name_of_element));
     println!("{:.20}", etwo_by_fpi());
     println!("{:.20}", ztwo_by_betatwo());
     println!("{:.20}", twom_e_ctwo_betatwo_tmax());
-    let de_dx: f64 = fpi_na_zp() * etwo_by_fpi() * ztwo_by_betatwo() * twom_e_ctwo_betatwo_tmax();
-    println!("dE/dx: {:.20} J/cm", de_dx);}
+    let de_dx: f64 = fpi_na_zp(name_of_element) * etwo_by_fpi() * ztwo_by_betatwo() * twom_e_ctwo_betatwo_tmax();
+    println!("dE/dx: {:.20} J/cm", de_dx);
+}
+
 
 // 4pi N_A Z_p / A m_m m_e c²
-fn fpi_na_zp() -> f64 {
-    const TUNGSTEN : (f64, f64, f64) = (19.3e-3, 74.0, 183.84);
-    let (atom_density, atom_number, mass_number) = TUNGSTEN;
-    let top_calc: f64 = 4.0 * PI_NUMBER * AVOGDRO_CONST * atom_number * atom_density;
-    let bottom_calc : f64 = mass_number * MOLAR_MASS * ELECTRON_MASS * ((0.7 * LIGHT_SPEED).powi(2));
-    let top_by_bottom: f64 = top_calc / bottom_calc;
-    top_by_bottom
+fn fpi_na_zp(name_of_element: &str) -> f64 {
+    if let Some((Some(atom_density), atom_number, mass_number)) = periodic::look_up_element(name_of_element) {
+        let top_calc: f64 = 4.0 * PI_NUMBER * AVOGADRO_CONST * atom_number * atom_density;
+        let bottom_calc: f64 = mass_number * MOLAR_MASS * ELECTRON_MASS * (0.7 * LIGHT_SPEED).powi(2);
+        top_calc / bottom_calc
+    } else {
+        eprintln!("Element {} not found or density is unavailable.", name_of_element);
+        0.0
+    }
 }
 
 // e² / 4pi e_0
