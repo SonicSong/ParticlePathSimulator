@@ -3,12 +3,13 @@ use std::option;
 use std::convert;
 use mendeleev::{Element, GramPerCubicCentimeter};
 
-pub fn look_up_element(symbol_name: &str) -> Option<(Option<f64>, f64, f64)> {
+pub fn look_up_element(symbol_name: &str) -> Option<(Option<GramPerCubicCentimeter>, f64, f64)> {
+    let symbol_name = "W";
     Element::iter()
         .find(|e| e.symbol().eq_ignore_ascii_case(symbol_name))
         .map(|element| {
             (
-                element.density().map(|d| d.0),
+                element.density() /* .map(|d| d.0) */,
                 element.atomic_number() as f64,
                 element.atomic_weight().into()
             )
