@@ -34,10 +34,11 @@ const I: f64 = 727.0;
 // Liczba Avogadro NA=6.022×1023mol−1
 
 pub fn low_energies_calc(name_of_element: &str) {
-    println!("{:.20}", fpi_na_zp(name_of_element));
-    println!("{:.20}", etwo_by_fpi());
-    println!("{:.20}", ztwo_by_betatwo());
-    println!("{:.20}", twom_e_ctwo_betatwo_tmax());
+    println!("\n Element: {}", name_of_element);
+    println!("\n fpi_na_zp: {:.20}", fpi_na_zp(name_of_element));
+    println!("\n etwo_by_fpi: {:.20}", etwo_by_fpi());
+    println!("\n ztwo_by_betatwo: {:.20}", ztwo_by_betatwo());
+    println!("\n twom_e_ctwo: {:.20}", twom_e_ctwo_betatwo_tmax());
     let de_dx: f64 = fpi_na_zp(name_of_element) * etwo_by_fpi() * ztwo_by_betatwo() * twom_e_ctwo_betatwo_tmax();
     println!("dE/dx: {:.20} J/cm", de_dx);
 }
@@ -45,7 +46,7 @@ pub fn low_energies_calc(name_of_element: &str) {
 
 // 4pi N_A Z_p / A m_m m_e c²
 fn fpi_na_zp(name_of_element: &str) -> f64 {
-    if let Some((Some(atom_density), atom_number, mass_number)) = periodic::look_up_element(name_of_element) {
+    if let Some((Some(atom_density), atom_number, mass_number)) = periodic::look_up_element(name_of_element) { //This doesn't work as it tries to compare it to nothing basically
         let top_calc: f64 = 4.0 * PI_NUMBER * AVOGADRO_CONST * atom_number * atom_density;
         let bottom_calc: f64 = mass_number * MOLAR_MASS * ELECTRON_MASS * (0.7 * LIGHT_SPEED).powi(2);
         top_calc / bottom_calc
