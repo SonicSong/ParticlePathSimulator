@@ -3,7 +3,7 @@ use std::f64::consts;
 use mendeleev::{Element, GramPerCubicCentimeter};
 use std::convert::TryFrom;
 use std::convert;
-use modules::periodic;
+use modules::periodic_lookup;
 
 use crate::modules;
 //TODO: Verify data and make sure calculation is correct
@@ -46,7 +46,7 @@ pub fn low_energies_calc(name_of_element: &str) {
 
 // 4pi N_A Z_p / A m_m m_e c²
 fn fpi_na_zp(name_of_element: &str) -> f64 {
-    if let Some((Some(atom_density), atom_number, mass_number)) = periodic::look_up_element(name_of_element) { //This doesn't work as it tries to compare it to nothing basically
+    if let Some((atom_density, atom_number, mass_number)) = periodic_lookup::look_up_element(name_of_element) {
         let top_calc: f64 = 4.0 * PI_NUMBER * AVOGADRO_CONST * atom_number * atom_density;
         let bottom_calc: f64 = mass_number * MOLAR_MASS * ELECTRON_MASS * (0.7 * LIGHT_SPEED).powi(2);
         top_calc / bottom_calc
