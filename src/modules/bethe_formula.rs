@@ -17,6 +17,7 @@ const VACUUM_PERMITTIVITY:f64 = 8.8541878188e-12; // F/m - electric constant
 const MOLAR_MASS: f64 = 0.18384;
 const BETA: f64 = 0.7;
 const I: f64 = 727.0;
+const PLANCK_CONST: f64 = 6.62607015e-34; // kg * m^2 * s^-1 - planck constant
 
 // Zdefiniowanie zmiennych i stałych
 
@@ -40,7 +41,7 @@ pub fn low_energies_calc(name_of_element: &str) {
     println!("\n ztwo_by_betatwo: {:.20}", ztwo_by_betatwo());
     println!("\n twom_e_ctwo: {:.20}", twom_e_ctwo_betatwo_tmax());
     let de_dx: f64 = fpi_na_zp(name_of_element) * etwo_by_fpi() * ztwo_by_betatwo() * twom_e_ctwo_betatwo_tmax();
-    println!("dE/dx: {:.20} J/cm", de_dx);
+    println!("dE/dx: {:.20} J/m", de_dx);
 }
 
 
@@ -90,16 +91,22 @@ fn twom_e_ctwo_betatwo_tmax() -> f64 {
     result
 }
 
+
 fn gamma() -> f64 {
     let gamma: f64 = 1.0 / (1.0 - (BETA.powi(2))).sqrt();
     gamma
 }
 
 fn delta() -> f64 {
-    // let h_Dirac: f64 = 1.054e-34; //J
-    let hwp_i: f64 = f64::ln((10.0 / 100.0));
+    let hwp_i: f64 = f64::ln((PLANCK_CONST * 1.0) / I);
     let beta_gamma:f64 = f64::ln(BETA * gamma());
     let result: f64 = hwp_i + beta_gamma - 0.5;
+    result
+}
+
+fn wp_plasma() -> f64 {
+    let top_by_bottom: f64 = 1.0;
+    let result: f64 = ELECTRON_CHARGE * top_by_bottom.sqrt();
     result
 }
 
