@@ -17,7 +17,7 @@ const VACUUM_PERMITTIVITY:f64 = 8.8541878188e-12; // F/m - electric constant
 const MOLAR_MASS: f64 = 0.18384;
 const BETA: f64 = 0.7;
 const I: f64 = 727.0;
-const PLANCK_CONST: f64 = 6.62607015e-34; // kg * m^2 * s^-1 - planck constant
+const PLANCK_CONST: f64 = 6.62607015e-34;
 
 // Zdefiniowanie zmiennych i stałych
 
@@ -59,9 +59,9 @@ fn fpi_na_zp(name_of_element: &str) -> f64 {
 
 // e² / 4pi e_0
 fn etwo_by_fpi() -> f64 {
-    let etwo: f64 = (ELECTRON_CHARGE.powi(2));
+    let etwo: f64 = ELECTRON_CHARGE.powi(2);
     let bot: f64 = 4.0 * PI_NUMBER * VACUUM_PERMITTIVITY;
-    let top_by_bot: f64 = (etwo/bot)*(etwo/bot);
+    let top_by_bot: f64 = (etwo/bot).powi(2);
     top_by_bot
 }
 
@@ -98,14 +98,16 @@ fn gamma() -> f64 {
 }
 
 fn delta() -> f64 {
-    let hwp_i: f64 = f64::ln((PLANCK_CONST * 1.0) / I);
+    let hwp_i: f64 = f64::ln((PLANCK_CONST * wp_plasma()) / I);
     let beta_gamma:f64 = f64::ln(BETA * gamma());
     let result: f64 = hwp_i + beta_gamma - 0.5;
     result
 }
 
 fn wp_plasma() -> f64 {
-    let top_by_bottom: f64 = 1.0;
+    let top: f64 = 1.0; //EH? ELECTRON CONCENTRATION?
+    let bottom: f64 = VACUUM_PERMITTIVITY * ELECTRON_MASS;
+    let top_by_bottom: f64 = top / bottom;
     let result: f64 = ELECTRON_CHARGE * top_by_bottom.sqrt();
     result
 }
