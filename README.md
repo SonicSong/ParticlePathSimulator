@@ -4,7 +4,8 @@ Implementation of Transportation of Ions in Matter in Rust Language .
 
 ## Project Objectives
 
-- [ ] Calculate Stopping power.
+- [X] Calculate Stopping power using Bethe-Bloch formula.
+- [ ] Calculate the interactions of energetic ions with amorphous target.
 - [ ] Implement GUI
 - [ ] Implement Particle path.
 - [ ] Make it work on Windows, Linux, MacOS. X86_64 and aarch64 CPU's architecture
