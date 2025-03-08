@@ -64,6 +64,9 @@ fn k_z_two_z_a_1_b_two(name_of_element: &str) -> f64 {
     }
 }
 
+fn twom_e_ctwo_btwo_dtwo_w(name_of_element: &str) -> f64 {
+    
+}
 
 // Legacy unfinished
 // pub fn low_energies_calc(name_of_element: &str) {
