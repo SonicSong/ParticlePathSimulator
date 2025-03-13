@@ -19,9 +19,12 @@ const ELECTRON_MASS: f64 = 9.1093837e-31; // MeV/c² or kg - electron mass
 const ELECTRON_CHARGE: f64 = 1.602176634e-19; // C - elementary charge
 const VACUUM_PERMITTIVITY:f64 = 8.8541878188e-12; // F/m - electric constant
 const MOLAR_MASS: f64 = 0.18384;
-const BETA: f64 = 0.7;
+const BETA: f64 = 0.7; // (Beta = V/c Velocity by light speed) v/c of incident particle
+const GAMMA: f64 = 1.0/(1.0 - BETA.powi(2)).sqrt();
 const I: f64 = 727.0;
 const PLANCK_CONST: f64 = 6.62607015e-34;
+
+const M_E_CPOWIT: f64 = ELECTRON_MASS * LIGHT_SPEED.powi(2);
 
 // Zdefiniowanie zmiennych i stałych
 
@@ -65,7 +68,15 @@ fn k_z_two_z_a_1_b_two(name_of_element: &str) -> f64 {
 }
 
 fn twom_e_ctwo_btwo_dtwo_w(name_of_element: &str) -> f64 {
-    let twom_e_ctwo: f64 = 2.0 * ELECTRON_MASS;
+    let twom_e_ctwo: f64 = 2.0 * M_E_CPOWIT * BETA.powi(2) * GAMMA.powi(2) * wmax();
+    let i_pow_two: f64 = 2.0;
+    let result: f64 = twom_e_ctwo / i_pow_two;
+    result
+}
+
+fn wmax() -> f64 {
+    let two_m_e_ctwo: f64 = 2.0 * M_E_CPOWIT * BETA.powi(2) * GAMMA.powi(2);
+    let one_two_gamma_m_e: f64 = (1.0 + (2.0 * GAMMA * ELECTRON_MASS)) / 1.0;
 
     let result: f64 = 1.0;
     result
