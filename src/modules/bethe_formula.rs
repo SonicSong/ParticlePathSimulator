@@ -76,9 +76,9 @@ fn twom_e_ctwo_btwo_dtwo_w(name_of_element: &str) -> f64 {
 
 fn wmax() -> f64 {
     let two_m_e_ctwo: f64 = 2.0 * M_E_CPOWIT * BETA.powi(2) * GAMMA.powi(2);
-    let one_two_gamma_m_e: f64 = (1.0 + (2.0 * GAMMA * ELECTRON_MASS)) / 1.0;
+    let one_two_gamma_m_e: f64 = (1.0 + (2.0 * GAMMA * ELECTRON_MASS)) / (1.0 + (ELECTRON_MASS / 1.0).powi(2));
 
-    let result: f64 = 1.0;
+    let result: f64 = two_m_e_ctwo/one_two_gamma_m_e;
     result
 }
 
