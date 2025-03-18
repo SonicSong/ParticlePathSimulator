@@ -69,14 +69,15 @@ fn k_z_two_z_a_1_b_two(name_of_element: &str) -> f64 {
 
 fn twom_e_ctwo_btwo_dtwo_w(name_of_element: &str) -> f64 {
     let twom_e_ctwo: f64 = 2.0 * M_E_CPOWIT * BETA.powi(2) * GAMMA.powi(2) * wmax();
-    let i_pow_two: f64 = 2.0;
+    let i_pow_two: f64 = 2.0; // Missing M^2 - mean excitation energy
     let result: f64 = twom_e_ctwo / i_pow_two;
     result
 }
 
 fn wmax() -> f64 {
     let two_m_e_ctwo: f64 = 2.0 * M_E_CPOWIT * BETA.powi(2) * GAMMA.powi(2);
-    let one_two_gamma_m_e: f64 = (1.0 + (2.0 * GAMMA * ELECTRON_MASS)) / (1.0 + (ELECTRON_MASS / 1.0).powi(2));
+    let one_two_gamma_m_e: f64 = 1.0 + 2.0 * GAMMA * (ELECTRON_MASS / 1.5) + (ELECTRON_MASS / 1.5).powi(2);
+    //^ Missing M - incident particle mass (Temporarly as 1.5)
 
     let result: f64 = two_m_e_ctwo/one_two_gamma_m_e;
     result
