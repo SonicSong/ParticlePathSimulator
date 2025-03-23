@@ -21,9 +21,9 @@ const VACUUM_PERMITTIVITY:f64 = 8.8541878188e-12; // F/m - electric constant
 const MOLAR_MASS: f64 = 0.18384;
 const I: f64 = 727.0;
 const PLANCK_CONST: f64 = 6.62607015e-34;
-
-
 const AVOGADRO_CONST: f64 = 6.02214076e23; // mol ^ -1
+
+
 
 // const BETA: f64 = 0.7; // VELOCITY * LIGHT_SPEED (Velocity is stored as a vector) (Beta = V/c Velocity by light speed) v/c of incident particle
 // const VELOCITY: Vec<f64> = range_step(0.1 * LIGHT_SPEED, LIGHT_SPEED, 100000.0).collect();
@@ -39,11 +39,23 @@ pub fn low_energies_calc(name_of_element: &str) {
     let mut de_dx_array: Vec<f64> = vec![];
     let mut velocity: Vec<f64> = vec![];
     // TODO: Loop for going through various values for BETA and GAMMA. For example Beta = (0.1*C/C) 0.1*C can be considered V
-    for i in 1i32..100i32 {
-        let i = f64::from(i) * 0.1;
-        let mut beta: f64 = (i * LIGHT_SPEED) / LIGHT_SPEED;
-        let mut gamma: f64 = 1.0/(1.0 - beta.powi(2)).sqrt();
-        let de_dx: f64 = k_z_two_z_a_1_b_two(name_of_element, 1.0) * twom_e_ctwo_btwo_dtwo_w(name_of_element, beta, gamma, energy);
+    for i in 990i32..1000i32 {
+        let i_t = f64::from(i) * 0.001;
+        let mut beta: f64 = (i_t * LIGHT_SPEED) / LIGHT_SPEED;
+        // let mut gamma: f64 = 1.0/(1.0 - ((i*LIGHT_SPEED)/LIGHT_SPEED).powi(2)).sqrt();
+        let denominator = 1.0 - ((i_t*LIGHT_SPEED)/LIGHT_SPEED).powi(2);
+        let gamma: f64;
+        const VELOCITY_CUTOFF: f64 = 0.999;
+        if denominator > 0.0  && i_t <= VELOCITY_CUTOFF {
+            gamma = 1.0 / denominator.sqrt();
+            velocity.push(gamma);
+        } else {
+            gamma = 0.0;
+            // panic!();
+        }
+        let de_dx: f64 = k_z_two_z_a_1_b_two(name_of_element, 1.0) *
+                (0.5 * (twom_e_ctwo_btwo_dtwo_w(name_of_element, beta, gamma, energy).ln() - beta.powi(2) -
+                (1.0 / 2.0)));
         de_dx_array.push(de_dx);
     }
     println!("{:?}", de_dx_array);
@@ -52,7 +64,9 @@ pub fn low_energies_calc(name_of_element: &str) {
 
 // const m_e_cpowit: f64 = ELECTRON_MASS * LIGHT_SPEED.powi(2);
 fn m_e_cpowit() -> f64 {
-    let result = ELECTRON_MASS * LIGHT_SPEED.powi(2);
+    // It should be 0.51099895000(15) MeV but returns 0.0000000000000818751771331348
+    // let result = ELECTRON_MASS * LIGHT_SPEED.powi(2);
+    let result: f64 = 0.51099895000;
     result
 }
 
@@ -60,7 +74,7 @@ fn k_z_two_z_a_1_b_two(name_of_element: &str, beta: f64) -> f64 {
     //K = 4π * N * A* r^2_e * m_e * c^2     0.307075 MeV mol^−1 cm^2
     //z = -1 for electron
     //z = +1 for proton
-    let k_z_two: f64 = 0.307075 * (1.0_f64).powi(2);
+    let k_z_two: f64 = 0.307075 * (-1.0_f64).powi(2);
     if let Some((atom_density, atom_number, mass_number)) = periodic_lookup::look_up_element(name_of_element) {
         let z_by_a: f64 = atom_number / mass_number;
         let one_by_beta: f64 = 1.0 / beta.powi(2);
@@ -74,22 +88,15 @@ fn k_z_two_z_a_1_b_two(name_of_element: &str, beta: f64) -> f64 {
 
 fn twom_e_ctwo_btwo_dtwo_w(name_of_element: &str, beta: f64, gamma: f64, m_e_cpowit: f64) -> f64 {
     let twom_e_ctwo: f64 = 2.0 * m_e_cpowit * beta.powi(2) * gamma.powi(2) * wmax(beta, gamma, m_e_cpowit);
-    let i_pow_two: f64 = 2.0; // Missing M^2 - mean excitation energy
+    let i_pow_two: f64 = ELECTRON_MASS.powi(2); // Missing M^2 - mean excitation energy
     let result: f64 = twom_e_ctwo / i_pow_two;
-    result
-}
-
-fn beta() -> f64 {
-
-    let result: f64 = 1.0;
     result
 }
 
 fn wmax(beta: f64, gamma: f64, m_e_cpowit: f64) -> f64 {
     let two_m_e_ctwo: f64 = 2.0 * m_e_cpowit * beta.powi(2) * gamma.powi(2);
     let one_two_gamma_m_e: f64 = 1.0 + 2.0 * gamma * (ELECTRON_MASS / 1.5) + (ELECTRON_MASS / 1.5).powi(2);
-    //^ Missing M - incident particle mass (Temporarly as 1.5)
-
+    //^ Missing M - incident particle mass
     let result: f64 = two_m_e_ctwo/one_two_gamma_m_e;
     result
 }
