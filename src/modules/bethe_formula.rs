@@ -10,13 +10,12 @@ use num::range_step;
 use num::traits::real::Real;
 use crate::modules::CustomProperties;
 
-
-
 // https://pdg.lbl.gov/2024/reviews/rpp2024-rev-passage-particles-matter.pdf
 //TODO: Rewrite the entire formula to match for the universal version found on (https://pdg.lbl.gov/rpp/encoders/pdg_note_1901.pdf)
 
 use crate::modules;
 //TODO: Verify data and make sure calculation is correct
+//TODO: Figure out what type of data there is. Either it should be CSG or SI.
 
 const PI_NUMBER: f64 = consts::PI;
 const LIGHT_SPEED: f64 = 299792458.0; // m/s speed of light
@@ -24,12 +23,9 @@ const ELECTRON_MASS: f64 = 9.1093837e-31; // MeV/c² or kg - electron mass
 const ELECTRON_CHARGE: f64 = 1.602176634e-19; // C - elementary charge
 const VACUUM_PERMITTIVITY:f64 = 8.8541878188e-12; // F/m - electric constant
 const MOLAR_MASS: f64 = 0.18384;
-const I: f64 = 727.0;
 const PLANCK_CONST: f64 = 6.62607015e-34;
 const AVOGADRO_CONST: f64 = 6.02214076e23; // mol ^ -1
 const MEAN_EXCITATION_ENERGY: f64 = 173.0; //  Mean excitation energy for Si 173 eV
-
-
 
 // const BETA: f64 = 0.7; // VELOCITY * LIGHT_SPEED (Velocity is stored as a vector) (Beta = V/c Velocity by light speed) v/c of incident particle
 // const VELOCITY: Vec<f64> = range_step(0.1 * LIGHT_SPEED, LIGHT_SPEED, 100000.0).collect();
