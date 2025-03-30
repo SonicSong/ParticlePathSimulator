@@ -15,7 +15,7 @@ use crate::modules::CustomProperties;
 
 use crate::modules;
 //TODO: Verify data and make sure calculation is correct
-//TODO: Figure out what type of data there is. Either it should be CSG or SI.
+//TODO: Make corrections for the data formats that use either CSG or SI or Both
 
 const PI_NUMBER: f64 = consts::PI;
 const LIGHT_SPEED: f64 = 299792458.0; // m/s speed of light
@@ -25,16 +25,11 @@ const VACUUM_PERMITTIVITY:f64 = 8.8541878188e-12; // F/m - electric constant
 const MOLAR_MASS: f64 = 0.18384;
 const PLANCK_CONST: f64 = 6.62607015e-34;
 const AVOGADRO_CONST: f64 = 6.02214076e23; // mol ^ -1
-const MEAN_EXCITATION_ENERGY: f64 = 173.0; //  Mean excitation energy for Si 173 eV
 
 // const BETA: f64 = 0.7; // VELOCITY * LIGHT_SPEED (Velocity is stored as a vector) (Beta = V/c Velocity by light speed) v/c of incident particle
 // const VELOCITY: Vec<f64> = range_step(0.1 * LIGHT_SPEED, LIGHT_SPEED, 100000.0).collect();
 
-// const GAMMA: f64 = 1.0/(1.0 - BETA.powi(2)).sqrt();
-//v <- seq(0.1*c,c,100000)
-// GAMMA is going to be changed to work in function as a let and not as a const
-
-pub fn low_energies_calc(name_of_element: &str) {
+pub fn low_energies_calc(name_of_element: &str, name_of_incident_particle: &str) {
     println!("\n Element: {}", name_of_element);
 
     let element_exci_energy = match Element::iter().find(|e|
@@ -48,7 +43,8 @@ pub fn low_energies_calc(name_of_element: &str) {
     let mut de_dx_array: Vec<f64> = vec![];
     let mut velocity: Vec<f64> = vec![];
     // TODO: Loop for going through various values for BETA and GAMMA. For example Beta = (0.1*C/C) 0.1*C can be considered V
-    for i in 990i32..1005i32 {
+
+    for i in 1i32..1000i32 {
         let i_t = f64::from(i) * 0.001;
         let mut beta: f64 = (i_t * LIGHT_SPEED) / LIGHT_SPEED;
         // let mut gamma: f64 = 1.0/(1.0 - ((i*LIGHT_SPEED)/LIGHT_SPEED).powi(2)).sqrt();
@@ -62,8 +58,8 @@ pub fn low_energies_calc(name_of_element: &str) {
             gamma = 0.0;
             // panic!();
         }
-        let de_dx: f64 = k_z_two_z_a_1_b_two(name_of_element, beta) *
-                (0.5 * (twom_e_ctwo_btwo_dtwo_w(beta, gamma, energy, element_exci_energy).ln() - beta.powi(2) -
+        let de_dx: f64 = k_z_two_z_a_1_b_two(name_of_element, beta, name_of_incident_particle) *
+                (0.5 * (twom_e_ctwo_btwo_dtwo_w(beta, gamma, energy, element_exci_energy, name_of_incident_particle).ln() - beta.powi(2) -
                 (1.0 / 2.0))); // Missing for now value of δ(βγ) which is currently 1.0
         de_dx_array.push(de_dx);
     }
@@ -78,12 +74,30 @@ fn m_e_cpowit() -> f64 {
     result
 }
 
-fn k_z_two_z_a_1_b_two(name_of_element: &str, beta: f64) -> f64 {
+// fn density_effect_correction() -> f64 {
+//     // δ(βγ)/2 → ln(ℏωp/I) + ln βγ − 1/2
+//
+// }
+
+fn k_z_two_z_a_1_b_two(name_of_element: &str, beta: f64, name_of_incident_particle: &str) -> f64 {
     //K = 4π * N * A* r^2_e * m_e * c^2     0.307075 MeV mol^−1 cm^2
     //z = -1 for electron
     //z = +1 for proton
-    let k_z_two: f64 = 0.307075 * (-1.0_f64).powi(2);
+    //z = +5 for Boron
+    let mut z_inci;
+
     if let Some((atom_density, atom_number, mass_number)) = periodic_lookup::look_up_element(name_of_element) {
+        if (name_of_incident_particle == "Ele") {
+            z_inci = -1.0_f64;
+        } else if (name_of_incident_particle == "Proto") {
+            z_inci = 1.0_f64;
+        } else if (name_of_element != "Ele" || name_of_element != "Proto") {
+            z_inci = mass_number;
+        } else {
+            // Default electron
+            z_inci = -1.0_f64
+        }
+        let k_z_two: f64 = 0.307075 * z_inci.powi(2);
         let z_by_a: f64 = atom_number / mass_number;
         let one_by_beta: f64 = 1.0 / beta.powi(2);
         let result: f64 = k_z_two * z_by_a * one_by_beta;
@@ -94,8 +108,8 @@ fn k_z_two_z_a_1_b_two(name_of_element: &str, beta: f64) -> f64 {
     }
 }
 
-fn twom_e_ctwo_btwo_dtwo_w(beta: f64, gamma: f64, m_e_cpowit: f64, element_exci_energy: Element) -> f64 {
-    let twom_e_ctwo: f64 = 2.0 * m_e_cpowit * beta.powi(2) * gamma.powi(2) * wmax(beta, gamma, m_e_cpowit);
+fn twom_e_ctwo_btwo_dtwo_w(beta: f64, gamma: f64, m_e_cpowit: f64, element_exci_energy: Element, name_of_incident_particle: &str) -> f64 {
+    let twom_e_ctwo: f64 = 2.0 * m_e_cpowit * beta.powi(2) * gamma.powi(2) * wmax(beta, gamma, m_e_cpowit, name_of_incident_particle);
 
     // Get mean excitation energy
     match element_exci_energy.custom_mean_excitation_energy() {
@@ -104,7 +118,8 @@ fn twom_e_ctwo_btwo_dtwo_w(beta: f64, gamma: f64, m_e_cpowit: f64, element_exci_
     }
 }
 
-fn wmax(beta: f64, gamma: f64, m_e_cpowit: f64) -> f64 {
+fn wmax(beta: f64, gamma: f64, m_e_cpowit: f64, name_of_incident_particle: &str) -> f64 {
+
     let two_m_e_ctwo: f64 = 2.0 * m_e_cpowit * beta.powi(2) * gamma.powi(2);
     let one_two_gamma_m_e: f64 = 1.0 + 2.0 * gamma * (ELECTRON_MASS / 1.5) + (ELECTRON_MASS / 1.5).powi(2);
     //^ Missing M - incident particle mass temp as 1.5

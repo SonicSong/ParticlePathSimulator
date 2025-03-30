@@ -15,6 +15,14 @@ pub fn look_up_element(symbol_name: &str) -> Option<(f64, f64, f64)> {
         })
 }
 
+pub fn look_up_element_weight(symbol_name: &str) -> Option<f64> {
+    Element::iter()
+        .find(|e|e.symbol().eq_ignore_ascii_case(symbol_name))
+        .map(|element| {
+            element.atomic_weight().into()
+        })
+}
+
 // Add function to calculate density of the material
 
 pub fn multiple_material_density() {

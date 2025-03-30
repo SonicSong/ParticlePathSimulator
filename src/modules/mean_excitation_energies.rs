@@ -9,6 +9,8 @@ impl CustomProperties for Element {
         // Return None for elements without data
         // Skipping complex elements that have multiple "versions" like Carbon
 
+        //Later add option to allow for custom "experimental values"
+
         //All data was taken from here https://pdg.lbl.gov/2024/AtomicNuclearProperties/
         match self {
             Element::Li => Some(40.0),
