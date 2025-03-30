@@ -7,7 +7,9 @@ pub trait CustomProperties {
 impl CustomProperties for Element {
     fn custom_mean_excitation_energy(&self) -> Option<f64> {
         // Return None for elements without data
-        // Skipping gasses and liquids
+        // Skipping complex elements that have multiple "versions" like Carbon
+
+        //All data was taken from here https://pdg.lbl.gov/2024/AtomicNuclearProperties/
         match self {
             Element::Li => Some(40.0),
             Element::Be => Some(63.7),
@@ -57,6 +59,18 @@ impl CustomProperties for Element {
             //Lanthanides
             Element::Ce => Some(523.0),
             Element::Pr => Some(535.0),
+            Element::Nd => Some(546.0),
+            Element::Pm => Some(560.0),
+            Element::Sm => Some(574.0),
+            Element::Eu => Some(580.0),
+            Element::Gd => Some(591.0),
+            Element::Tb => Some(614.0),
+            Element::Dy => Some(628.0),
+            Element::Ho => Some(650.0),
+            Element::Er => Some(658.0),
+            Element::Tm => Some(674.0),
+            Element::Yb => Some(684.0),
+            Element::Lu => Some(694.0),
 
             Element::Hf => Some(705.0),
             Element::Ta => Some(718.0),
@@ -77,6 +91,20 @@ impl CustomProperties for Element {
             Element::Ra => Some(826.0),
             Element::Ac => Some(841.0),
             //Actinides
+            Element::Th => Some(847.0),
+            Element::Pa => Some(878.0),
+            Element::U => Some(890.0),
+            Element::Np => Some(902.0),
+            Element::Pu => Some(921.0),
+            Element::Am => Some(934.0),
+            Element::Cm => Some(939.0),
+            Element::Bk => Some(952.0),
+            Element::Cf => Some(966.0),
+            Element::Es => Some(980.0),
+            Element::Fm => Some(994.0),
+            Element::Md => Some(1007.0),
+            Element::No => Some(1020.0),
+            Element::Lr => Some(1034.0),
 
             Element::Rf => Some(1047.0),
             Element::Db => Some(1061.0),
