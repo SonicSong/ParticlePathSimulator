@@ -1,12 +1,7 @@
-use std::any::TypeId;
 use std::f64::consts;
-use mendeleev::{Element, GramPerCubicCentimeter};
-use std::convert::TryFrom;
-use std::convert;
+use mendeleev::{Element};
 use std::iter::Iterator;
 use modules::periodic_lookup;
-use modules::mean_excitation_energies;
-use num::range_step;
 use num::traits::real::Real;
 use crate::modules::CustomProperties;
 
@@ -17,17 +12,13 @@ use crate::modules;
 //TODO: Verify data and make sure calculation is correct
 //TODO: Make corrections for the data formats that use either CSG or SI or Both
 
+//Constants https://pdg.lbl.gov/2024/reviews/rpp2024-rev-phys-constants.pdf
+
 const PI_NUMBER: f64 = consts::PI;
 const LIGHT_SPEED: f64 = 299792458.0; // m/s speed of light
-const ELECTRON_MASS: f64 = 9.1093837e-31; // MeV/c² or kg - electron mass
-const ELECTRON_CHARGE: f64 = 1.602176634e-19; // C - elementary charge
-const VACUUM_PERMITTIVITY:f64 = 8.8541878188e-12; // F/m - electric constant
-const MOLAR_MASS: f64 = 0.18384;
+const ELECTRON_MASS: f64 = 9.1093837e-31; // kg - electron mass (m_e)
 const PLANCK_CONST: f64 = 6.62607015e-34;
 const AVOGADRO_CONST: f64 = 6.02214076e23; // mol ^ -1
-
-// const BETA: f64 = 0.7; // VELOCITY * LIGHT_SPEED (Velocity is stored as a vector) (Beta = V/c Velocity by light speed) v/c of incident particle
-// const VELOCITY: Vec<f64> = range_step(0.1 * LIGHT_SPEED, LIGHT_SPEED, 100000.0).collect();
 
 pub fn low_energies_calc(name_of_element: &str, name_of_incident_particle: &str) {
     println!("\n Element: {}", name_of_element);
@@ -47,7 +38,7 @@ pub fn low_energies_calc(name_of_element: &str, name_of_incident_particle: &str)
     for i in 1i32..1000i32 {
         let i_t = f64::from(i) * 0.001;
         let mut beta: f64 = (i_t * LIGHT_SPEED) / LIGHT_SPEED;
-        // let mut gamma: f64 = 1.0/(1.0 - ((i*LIGHT_SPEED)/LIGHT_SPEED).powi(2)).sqrt();
+
         let denominator = 1.0 - ((i_t*LIGHT_SPEED)/LIGHT_SPEED).powi(2);
         let gamma: f64;
         const VELOCITY_CUTOFF: f64 = 0.999;
@@ -74,10 +65,10 @@ fn m_e_cpowit() -> f64 {
     result
 }
 
-// fn density_effect_correction() -> f64 {
-//     // δ(βγ)/2 → ln(ℏωp/I) + ln βγ − 1/2
-//
-// }
+fn density_effect_correction(beta: f64, gamma: f64) {
+    // δ(βγ)/2 → ln(ℏωp/I) + ln βγ − 1/2
+
+}
 
 fn k_z_two_z_a_1_b_two(name_of_element: &str, beta: f64, name_of_incident_particle: &str) -> f64 {
     //K = 4π * N * A* r^2_e * m_e * c^2     0.307075 MeV mol^−1 cm^2
@@ -92,7 +83,7 @@ fn k_z_two_z_a_1_b_two(name_of_element: &str, beta: f64, name_of_incident_partic
         } else if (name_of_incident_particle == "Proto") {
             z_inci = 1.0_f64;
         } else if (name_of_element != "Ele" || name_of_element != "Proto") {
-            z_inci = mass_number;
+            z_inci = atom_number;
         } else {
             // Default electron
             z_inci = -1.0_f64
@@ -118,11 +109,39 @@ fn twom_e_ctwo_btwo_dtwo_w(beta: f64, gamma: f64, m_e_cpowit: f64, element_exci_
     }
 }
 
-fn wmax(beta: f64, gamma: f64, m_e_cpowit: f64, name_of_incident_particle: &str) -> f64 {
+fn calculate_incident_particle_mass(name_of_incident_particle: &str) -> f64{
 
-    let two_m_e_ctwo: f64 = 2.0 * m_e_cpowit * beta.powi(2) * gamma.powi(2);
-    let one_two_gamma_m_e: f64 = 1.0 + 2.0 * gamma * (ELECTRON_MASS / 1.5) + (ELECTRON_MASS / 1.5).powi(2);
-    //^ Missing M - incident particle mass temp as 1.5
-    let result: f64 = two_m_e_ctwo/one_two_gamma_m_e;
-    result
+    let uni_amu: f64 = 931.4941024228; // MeV
+    if (name_of_incident_particle == "Ele" || name_of_incident_particle == "Proto") {
+        if (name_of_incident_particle == "Ele") {
+            let result: f64 = 0.51099895000; // MeV/c2
+            result
+        } else {
+            let result: f64 = 938.27208816; // MeV/c2
+            result
+        }
+    } else {
+        if let Some((mass_number)) = periodic_lookup::look_up_element_weight(name_of_incident_particle) {
+            let result: f64 = mass_number * uni_amu;
+            result
+        } else {
+            eprintln!("Element {} not found or density is unavailable.", name_of_incident_particle);
+            0.0
+        }
+    }
+}
+
+fn wmax(beta: f64, gamma: f64, m_e_cpowit: f64, name_of_incident_particle: &str) -> f64 {
+    //TODO: Not compatible with electrons. Need to do find the calculation for Wmax that doesn't divide electron mass by electron mass.
+    if (name_of_incident_particle == "Ele") {
+        let result: f64 = 1.0;
+        result
+    } else {
+        let two_m_e_ctwo: f64 = 2.0 * m_e_cpowit * beta.powi(2) * gamma.powi(2);
+        let one_two_gamma_m_e: f64 = 1.0 + 2.0 * gamma * (0.51099895000 / calculate_incident_particle_mass(name_of_incident_particle))
+            + (0.51099895000 / calculate_incident_particle_mass(name_of_incident_particle)).powi(2);
+        //TODO: Verify if the incident particle mass is calculated correctly.
+        let result: f64 = two_m_e_ctwo/one_two_gamma_m_e;
+        result
+    }
 }
