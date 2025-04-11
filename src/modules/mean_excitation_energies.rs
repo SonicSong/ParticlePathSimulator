@@ -9,7 +9,7 @@ impl CustomProperties for Element {
         // Return None for elements without data
         // Skipping complex elements that have multiple "versions" like Carbon
 
-        //TODO: Later add option to allow for custom "experimental values"
+        //TODO: Later add option to allow for custom "experimental values" or rather values that aren't considered in this list.
 
         //All data was taken from here https://pdg.lbl.gov/2024/AtomicNuclearProperties/
         match self {

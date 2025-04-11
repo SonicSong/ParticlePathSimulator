@@ -65,7 +65,7 @@ fn m_e_cpowit() -> f64 {
     result
 }
 
-fn density_effect_correction(beta: f64, gamma: f64) {
+fn density_effect_correction(beta: f64, gamma: f64) { // -> f64 {
     // δ(βγ)/2 → ln(ℏωp/I) + ln βγ − 1/2
 
 }
@@ -138,7 +138,7 @@ fn wmax(beta: f64, gamma: f64, m_e_cpowit: f64, name_of_incident_particle: &str)
         result
     } else {
         let two_m_e_ctwo: f64 = 2.0 * m_e_cpowit * beta.powi(2) * gamma.powi(2);
-        let one_two_gamma_m_e: f64 = 1.0 + 2.0 * gamma * (0.51099895000 / calculate_incident_particle_mass(name_of_incident_particle))
+        let one_two_gamma_m_e: f64 = 1.0 + ((2.0 * gamma * 0.51099895000) / calculate_incident_particle_mass(name_of_incident_particle))
             + (0.51099895000 / calculate_incident_particle_mass(name_of_incident_particle)).powi(2);
         //TODO: Verify if the incident particle mass is calculated correctly.
         let result: f64 = two_m_e_ctwo/one_two_gamma_m_e;
