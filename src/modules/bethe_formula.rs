@@ -1,9 +1,9 @@
 use std::f64::consts;
 use mendeleev::{Element};
 use std::iter::Iterator;
-use modules::periodic_lookup;
+use modules::periodic_table::periodic_lookup;
 use num::traits::real::Real;
-use crate::modules::CustomProperties;
+use crate::modules::periodic_table::mean_excitation_energies::*;
 
 // https://pdg.lbl.gov/2024/reviews/rpp2024-rev-passage-particles-matter.pdf
 //TODO: Rewrite the entire formula to match for the universal version found on (https://pdg.lbl.gov/rpp/encoders/pdg_note_1901.pdf)
@@ -51,7 +51,7 @@ pub fn low_energies_calc(name_of_element: &str, name_of_incident_particle: &str)
         }
         let de_dx: f64 = k_z_two_z_a_1_b_two(name_of_element, beta, name_of_incident_particle) *
                 (0.5 * (twom_e_ctwo_btwo_dtwo_w(beta, gamma, energy, element_exci_energy, name_of_incident_particle).ln() - beta.powi(2) -
-                (1.0 / 2.0))); // Missing for now value of δ(βγ) which is currently 1.0
+                density_effect_correction(beta, gamma))); // Missing for now value of δ(βγ) which is currently 1.0
         de_dx_array.push(de_dx);
     }
     println!("{:?}", de_dx_array);
@@ -65,9 +65,14 @@ fn m_e_cpowit() -> f64 {
     result
 }
 
-fn density_effect_correction(beta: f64, gamma: f64) { // -> f64 {
+fn density_effect_correction(beta: f64, gamma: f64) -> f64 {
     // δ(βγ)/2 → ln(ℏωp/I) + ln βγ − 1/2
+    // Mainly this δ(βγ)/2
+    // PDG: https://pdg.lbl.gov/2024/reviews/rpp2024-rev-passage-particles-matter.pdf → 34.2.5
 
+
+
+    1.0
 }
 
 fn k_z_two_z_a_1_b_two(name_of_element: &str, beta: f64, name_of_incident_particle: &str) -> f64 {
