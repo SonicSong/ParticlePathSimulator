@@ -1,5 +1,5 @@
 mod modules;
-use modules::bethe_formula::*;
+use modules::bethe_formula;
 // use std::io::stdin;
 // use mendeleev::Element;
 

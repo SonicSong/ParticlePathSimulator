@@ -3,6 +3,12 @@ use mendeleev::{Element};
 use std::iter::Iterator;
 use modules::periodic_table::periodic_lookup;
 use num::traits::real::Real;
+
+//TODO: Replace all f64 to rug::Float for better precision during calculations
+//TODO: Set global variable that can be changed in settings on runtime that defines the precision of Floats for "low-end machines"
+// (Not sure how memory usage will spike so will start from small values)
+use rug::Float;
+
 use crate::modules::periodic_table::mean_excitation_energies::*;
 
 // https://pdg.lbl.gov/2024/reviews/rpp2024-rev-passage-particles-matter.pdf

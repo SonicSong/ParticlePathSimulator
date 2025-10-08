@@ -29,3 +29,5 @@ pub fn multiple_material_density() {
     // p = m/V equation for the material density
 
 }
+
+pub fn periodic_table() {}

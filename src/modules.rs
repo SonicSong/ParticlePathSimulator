@@ -7,3 +7,5 @@ pub mod periodic_table {
 }
 
 pub mod bethe_formula;
+mod settings;
+mod atomic_vars;
