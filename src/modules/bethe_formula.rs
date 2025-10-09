@@ -3,11 +3,13 @@ use mendeleev::{Element};
 use std::iter::Iterator;
 use modules::periodic_table::periodic_lookup;
 use num::traits::real::Real;
+use std::sync::atomic::Ordering;
+use modules::atomic_vars;
 
 //TODO: Replace all f64 to rug::Float for better precision during calculations
 //TODO: Set global variable that can be changed in settings on runtime that defines the precision of Floats for "low-end machines"
 // (Not sure how memory usage will spike so will start from small values)
-use rug::Float;
+use rug::{Assign, Float};
 
 use crate::modules::periodic_table::mean_excitation_energies::*;
 
@@ -15,10 +17,18 @@ use crate::modules::periodic_table::mean_excitation_energies::*;
 //TODO: Rewrite the entire formula to match for the universal version found on (https://pdg.lbl.gov/rpp/encoders/pdg_note_1901.pdf)
 
 use crate::modules;
+use crate::modules::atomic_vars::PRECISION;
 //TODO: Verify data and make sure calculation is correct
 //TODO: Make corrections for the data formats that use either CSG or SI or Both
 
 //Constants https://pdg.lbl.gov/2024/reviews/rpp2024-rev-phys-constants.pdf
+
+fn precise(val: &str) -> Float {
+    let precision_bits: u32 = crate::modules::atomic_vars::PRECISION.load(Ordering::Relaxed) as u32;
+    let mut result = Float::new(precision_bits);
+    result.assign(Float::parse(val).expect("Invalid float string"));
+    result
+}
 
 const PI_NUMBER: f64 = consts::PI;
 const LIGHT_SPEED: f64 = 299792458.0; // m/s speed of light

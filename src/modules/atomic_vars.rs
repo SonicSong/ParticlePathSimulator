@@ -1,3 +1,3 @@
-use std::sync::Mutex;
+use std::sync::atomic::{AtomicI32, Ordering};
 
-static PRECISION: Mutex<i32> = 100;
+pub static PRECISION: AtomicI32 = AtomicI32::new(200);
