@@ -3,6 +3,9 @@ use std::option;
 use std::convert;
 use mendeleev::{Element, GramPerCubicCentimeter};
 
+//TODO: Phase out mendeleev for custom database.
+//Reason for phasing out mendeleev crate. It lacks a lot of information and is mainly for general use. Not advanced or custom properties.
+
 pub fn look_up_element(symbol_name: &str) -> Option<(f64, f64, f64)> {
     Element::iter()
         .find(|e| e.symbol().eq_ignore_ascii_case(symbol_name))

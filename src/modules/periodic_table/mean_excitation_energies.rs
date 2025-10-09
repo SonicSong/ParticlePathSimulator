@@ -4,6 +4,8 @@ pub trait CustomProperties {
     fn custom_mean_excitation_energy(&self) -> Option<f64>;
 }
 
+//TODO: Make custom_mean_excitation_energy to be compatible with new dataset that will include more data.
+
 impl CustomProperties for Element {
     fn custom_mean_excitation_energy(&self) -> Option<f64> {
         // Return None for elements without data

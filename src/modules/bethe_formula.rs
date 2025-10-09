@@ -24,7 +24,7 @@ use crate::modules::atomic_vars::PRECISION;
 //Constants https://pdg.lbl.gov/2024/reviews/rpp2024-rev-phys-constants.pdf
 
 fn precise(val: &str) -> Float {
-    let precision_bits: u32 = crate::modules::atomic_vars::PRECISION.load(Ordering::Relaxed) as u32;
+    let precision_bits: u32 = PRECISION.load(Ordering::Relaxed) as u32;
     let mut result = Float::new(precision_bits);
     result.assign(Float::parse(val).expect("Invalid float string"));
     result
@@ -85,10 +85,14 @@ fn density_effect_correction(beta: f64, gamma: f64) -> f64 {
     // δ(βγ)/2 → ln(ℏωp/I) + ln βγ − 1/2
     // Mainly this δ(βγ)/2
     // PDG: https://pdg.lbl.gov/2024/reviews/rpp2024-rev-passage-particles-matter.pdf → 34.2.5
-
+    // Use Sternheimer
 
 
     1.0
+}
+
+fn shell_correction() {
+    //TODO: Implement shell correction formula
 }
 
 fn k_z_two_z_a_1_b_two(name_of_element: &str, beta: f64, name_of_incident_particle: &str) -> f64 {
@@ -107,7 +111,7 @@ fn k_z_two_z_a_1_b_two(name_of_element: &str, beta: f64, name_of_incident_partic
             z_inci = atom_number;
         } else {
             // Default electron
-            z_inci = -1.0_f64
+            z_inci = 1.0_f64
         }
         let k_z_two: f64 = 0.307075 * z_inci.powi(2);
         let z_by_a: f64 = atom_number / mass_number;

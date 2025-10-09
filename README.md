@@ -28,7 +28,3 @@ I’m not doing this for a grade, a paycheck, or recognition.
 I’m doing this because it’s interesting — because I want to see how far a single person can go in recreating what was once considered impossible.
 
 __Per aspera, ad astra.__
-
-## Licensing
-
-This project is currently in development. A formal license will be selected once the core functionality is established. Contributions are welcome, but please note that the licensing terms may change in the future.
