@@ -85,7 +85,7 @@ fn density_effect_correction(beta: f64, gamma: f64) -> f64 {
     // δ(βγ)/2 → ln(ℏωp/I) + ln βγ − 1/2
     // Mainly this δ(βγ)/2
     // PDG: https://pdg.lbl.gov/2024/reviews/rpp2024-rev-passage-particles-matter.pdf → 34.2.5
-    // Use Sternheimer
+    // Use Sternheimer parameterizatino
 
 
     1.0
@@ -135,7 +135,6 @@ fn twom_e_ctwo_btwo_dtwo_w(beta: f64, gamma: f64, m_e_cpowit: f64, element_exci_
 }
 
 fn calculate_incident_particle_mass(name_of_incident_particle: &str) -> f64{
-
     let uni_amu: f64 = 931.4941024228; // MeV
     if (name_of_incident_particle == "Ele" || name_of_incident_particle == "Proto") {
         if (name_of_incident_particle == "Ele") {
