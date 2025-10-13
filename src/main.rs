@@ -15,16 +15,22 @@ fn print_type_of<T>(_: &T) {
 
 fn main() {
 
-    //TODO: Change everything from f64 to "something" that will delay IEEE754 rounding error for the last possible moment
+    //OLD: Change everything from f64 to "something" that will delay IEEE754 rounding error for the last possible moment
+    //Switching to rug::float "fixes" problem of IEEE754 by having better precision while working on float values
 
-    let PRECISION_BITS: u32 = crate::modules::atomic_vars::PRECISION.load(Ordering::Relaxed) as u32;
+    let PRECISION_BITS: u32 = PRECISION.load(Ordering::Relaxed) as u32;
 
     let TEST_PRECISION = Float::with_val(200, 0.001);
 
 
     let mut TEST_PRECISION_S = Float::new(PRECISION_BITS);
-    TEST_PRECISION_S.assign(Float::parse("0.001").expect("Invalid float string"));
-    println!("PRECISION: 0.0{} <- RUG NO STRING", TEST_PRECISION);
+    let mut TEST_PRECISION_S_t = Float::new(PRECISION_BITS);
+    let mut SUM = Float::new(PRECISION_BITS);
+    TEST_PRECISION_S.assign(Float::parse("0.101").expect("Invalid float string"));
+    TEST_PRECISION_S_t.assign(Float::parse("2.000").expect("Invalid float string"));
+    SUM.assign(&TEST_PRECISION_S + &TEST_PRECISION_S_t);
+    println!("TEST ADDITION {:?}", SUM);
+    println!("PRECISION: {} <- RUG NO STRING", TEST_PRECISION);
     print_type_of(&TEST_PRECISION);
     println!("Precision str: {} <- RUG W/STRING", TEST_PRECISION_S);
     print_type_of(&TEST_PRECISION_S);

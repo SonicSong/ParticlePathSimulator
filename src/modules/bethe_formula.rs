@@ -31,12 +31,14 @@ fn precise(val: &str) -> Float {
 }
 
 const PI_NUMBER: f64 = consts::PI;
-const LIGHT_SPEED: f64 = 299792458.0; // m/s speed of light
+const LIGHT_SPEED: &str = "299792458.0"; // m/s speed of light
 const ELECTRON_MASS: f64 = 9.1093837e-31; // kg - electron mass (m_e)
 const PLANCK_CONST: f64 = 6.62607015e-34;
 const AVOGADRO_CONST: f64 = 6.02214076e23; // mol ^ -1
 
 pub fn low_energies_calc(name_of_element: &str, name_of_incident_particle: &str) {
+    let PRECISION_BITS: u32 = crate::modules::atomic_vars::PRECISION.load(Ordering::Relaxed) as u32;
+
     println!("\n Element: {}", name_of_element);
 
     let element_exci_energy = match Element::iter().find(|e|
@@ -84,7 +86,9 @@ fn m_e_cpowit() -> f64 {
 fn density_effect_correction(beta: f64, gamma: f64) -> f64 {
     // δ(βγ)/2 → ln(ℏωp/I) + ln βγ − 1/2
     // Mainly this δ(βγ)/2
-    // PDG: https://pdg.lbl.gov/2024/reviews/rpp2024-rev-passage-particles-matter.pdf → 34.2.5
+
+    // 34.2.5 Density effec
+    // PDG: https://pdg.lbl.gov/2024/reviews/rpp2024-rev-passage-particles-matter.pdf
     // Use Sternheimer parameterizatino
 
 
@@ -156,6 +160,9 @@ fn calculate_incident_particle_mass(name_of_incident_particle: &str) -> f64{
 }
 
 fn wmax(beta: f64, gamma: f64, m_e_cpowit: f64, name_of_incident_particle: &str) -> f64 {
+    // https://pdg.lbl.gov/2022/reviews/rpp2022-rev-passage-particles-matter.pdf?
+    // 34.2.2 Maximum energy transfer to an electron in a single collision
+
     //TODO: Not compatible with electrons. Need to do find the calculation for Wmax that doesn't divide electron mass by electron mass.
     if (name_of_incident_particle == "Ele") {
         let result: f64 = 1.0;
