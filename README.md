@@ -1,7 +1,5 @@
 # ParticlePathSimulator (PPS)
 
-Implementation of Transportation of Ions in Matter in Rust Language.
-
 ParticlePathSimulator is an open scientific project. It exists to advance public understanding of particle interactions and must remain accessible to all. Any derivative works must stay open and credit the original author
 
 ## Project Objectives
