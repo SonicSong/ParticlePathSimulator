@@ -10,7 +10,7 @@ use modules::atomic_vars;
 //TODO: Set global variable that can be changed in settings on runtime that defines the precision of Floats for "low-end machines"
 // (Not sure how memory usage will spike so will start from small values)
 use rug::{Assign, Float};
-
+use rug::float::Constant;
 use crate::modules::periodic_table::mean_excitation_energies::*;
 
 // https://pdg.lbl.gov/2024/reviews/rpp2024-rev-passage-particles-matter.pdf
@@ -31,12 +31,41 @@ fn precise(val: &str) -> Float {
 }
 
 const PI_NUMBER: f64 = consts::PI;
-const LIGHT_SPEED: &str = "299792458.0"; // m/s speed of light
+const LIGHT_SPEED: f64 = 299792458.0; // m/s speed of light
 const ELECTRON_MASS: f64 = 9.1093837e-31; // kg - electron mass (m_e)
 const PLANCK_CONST: f64 = 6.62607015e-34;
 const AVOGADRO_CONST: f64 = 6.02214076e23; // mol ^ -1
 
+fn pi_number_ret() -> Float {
+    let precision_bits: u32 = PRECISION.load(Ordering::Relaxed) as u32;
+    let mut pi_numb = Float::new(precision_bits);
+    pi_numb.assign(Constant::Pi);
+    pi_numb
+}
+
+fn light_speed_ret() -> Float {
+    let light_spd = precise("299792458.0");
+    light_spd
+}
+
+fn electron_mass_ret() -> Float {
+    let electron_mass = precise("9.1093837e-31");
+    electron_mass
+}
+
+fn planck_ret() -> Float {
+    let planck = precise("6.62607015e-34");
+    planck
+}
+
+fn avogadro_ret() -> Float {
+    let avogadro = precise("6.02214076e23");
+    avogadro
+}
+
 pub fn low_energies_calc(name_of_element: &str, name_of_incident_particle: &str) {
+    //Figured out mostly stuff regarding rug::Float. convert every single f64 to rug::Float for more precision.
+
     let PRECISION_BITS: u32 = crate::modules::atomic_vars::PRECISION.load(Ordering::Relaxed) as u32;
 
     println!("\n Element: {}", name_of_element);
@@ -50,7 +79,9 @@ pub fn low_energies_calc(name_of_element: &str, name_of_incident_particle: &str)
 
     let energy: f64 = m_e_cpowit();
     let mut de_dx_array: Vec<f64> = vec![];
+    // let mut de_dx_array: Vec<Float> = vec![];
     let mut velocity: Vec<f64> = vec![];
+    // let mut velocity: Vec<Float> = vec![];
     // TODO: Loop for going through various values for BETA and GAMMA. For example Beta = (0.1*C/C) 0.1*C can be considered V
 
     for i in 1i32..1000i32 {
@@ -60,6 +91,7 @@ pub fn low_energies_calc(name_of_element: &str, name_of_incident_particle: &str)
         let denominator = 1.0 - ((i_t*LIGHT_SPEED)/LIGHT_SPEED).powi(2);
         let gamma: f64;
         const VELOCITY_CUTOFF: f64 = 0.999;
+        // let VELOCITY_CUTOFF: Float = precise("0.999");
         if denominator > 0.0  && i_t <= VELOCITY_CUTOFF {
             gamma = 1.0 / denominator.sqrt();
             velocity.push(gamma);

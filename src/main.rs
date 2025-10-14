@@ -8,6 +8,7 @@ use modules::atomic_vars;
 use rug::{Assign, Float};
 use crate::modules::atomic_vars::PRECISION;
 use std::any::type_name;
+use rug::float::Constant;
 
 fn print_type_of<T>(_: &T) {
     println!("{} <- TYPE OF DATA ", type_name::<T>());
@@ -22,14 +23,20 @@ fn main() {
 
     let TEST_PRECISION = Float::with_val(200, 0.001);
 
+    let mut PI_NUMB = Float::new(PRECISION_BITS);
+    PI_NUMB.assign(Constant::Pi);
+    println!("PI = {}", PI_NUMB);
+    print_type_of(&PI_NUMB);
 
     let mut TEST_PRECISION_S = Float::new(PRECISION_BITS);
     let mut TEST_PRECISION_S_t = Float::new(PRECISION_BITS);
+
     let mut SUM = Float::new(PRECISION_BITS);
-    TEST_PRECISION_S.assign(Float::parse("0.101").expect("Invalid float string"));
+    TEST_PRECISION_S.assign(Float::parse("0.001").expect("Invalid float string"));
     TEST_PRECISION_S_t.assign(Float::parse("2.000").expect("Invalid float string"));
     SUM.assign(&TEST_PRECISION_S + &TEST_PRECISION_S_t);
     println!("TEST ADDITION {:?}", SUM);
+    print_type_of(&SUM);
     println!("PRECISION: {} <- RUG NO STRING", TEST_PRECISION);
     print_type_of(&TEST_PRECISION);
     println!("Precision str: {} <- RUG W/STRING", TEST_PRECISION_S);
