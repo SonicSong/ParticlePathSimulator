@@ -75,7 +75,7 @@ pub fn low_energies_calc(name_of_element: &str, name_of_incident_particle: &str)
 
     println!("\n Element: {}", name_of_element);
 
-    let element_exci_energy = match Element::iter().find(|e|
+    let element_exci_energy = match Element::iter().find(|e:&Element|
         e.symbol().eq_ignore_ascii_case(name_of_element) ||
             e.name().eq_ignore_ascii_case(name_of_element)) {
         Some(e) => e,
