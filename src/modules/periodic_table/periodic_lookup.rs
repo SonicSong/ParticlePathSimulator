@@ -2,20 +2,32 @@ use std::f64::consts;
 use std::option;
 use std::convert;
 use mendeleev::{Element, GramPerCubicCentimeter};
+use modules::bethe_formula;
+use crate::modules;
+use rug::Float;
 
 //TODO: Phase out mendeleev for custom database.
 //Reason for phasing out mendeleev crate. It lacks a lot of information and is mainly for general use. Not advanced or custom properties.
 
-pub fn look_up_element(symbol_name: &str) -> Option<(f64, f64, f64)> {
-    Element::iter()
-        .find(|e| e.symbol().eq_ignore_ascii_case(symbol_name))
-        .map(|element| {
-            (
-                element.density().map(|gpcc| gpcc.0).unwrap_or(0.0),
-                element.atomic_number() as f64,
-                element.atomic_weight().into()
-            )
-        })
+// pub fn look_up_element(symbol_name: &str) -> Option<(f64, f64, f64)> {
+//     Element::iter()
+//         .find(|e| e.symbol().eq_ignore_ascii_case(symbol_name))
+//         .map(|element| {
+//             (
+//                 element.density().map(|gpcc| gpcc.0).unwrap_or(0.0),
+//                 element.atomic_number() as f64,
+//                 element.atomic_weight().into()
+//             )
+//         })
+// }
+
+pub fn look_up_element(symbol_name: &str) -> Option<(Float, Float, Float)> {
+    Some((
+        bethe_formula::precise("2.329"),
+        // 14,
+        bethe_formula::precise("14"),
+        bethe_formula::precise("28.0855(3)"),
+    ))
 }
 
 pub fn look_up_element_weight(symbol_name: &str) -> Option<f64> {
