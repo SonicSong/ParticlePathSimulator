@@ -5,6 +5,7 @@ ParticlePathSimulator is an open scientific project. It exists to advance public
 ## Project Objectives
 
 - [ ] Calculate Stopping power using Bethe-Bloch formula.
+- [ ] Density/Shell correction under development
 - [ ] Calculate the interactions of energetic ions with amorphous target.
 - [ ] Implement GUI
 - [ ] Implement Particle path graphing.
