@@ -104,7 +104,9 @@ pub fn low_energies_calc(name_of_element: &str, name_of_incident_particle: &str)
                 density_effect_correction(beta.clone(), gamma))); // Missing for now value of δ(βγ) which is currently 1.0
         de_dx_array.push(de_dx);
     }
-    println!("{:?}", de_dx_array);
+    println!("<-dE/dx>: {:?}", de_dx_array);
+    println!("Velocity: {:?}", velocity);
+
     // println!("dE/dx:  J/m");
 }
 

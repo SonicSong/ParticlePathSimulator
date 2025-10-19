@@ -50,7 +50,7 @@ fn main() {
     // stdin().read_line(&mut name_of_element).expect("Element symbol");
     // name_of_element.pop();
     let name_of_element = "Si";
-    let name_of_incident_particle = "Proto";
+    let name_of_incident_particle = "Ele";
     modules::bethe_formula::low_energies_calc(&*name_of_element, name_of_incident_particle);
 }
 
