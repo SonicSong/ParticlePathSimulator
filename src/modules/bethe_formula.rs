@@ -101,7 +101,7 @@ pub fn low_energies_calc(name_of_element: &str, name_of_incident_particle: &str)
         // This formula is for Stopping power at intermediate energies
         let de_dx: Float = k_z_two_z_a_1_b_two(name_of_element, beta.clone(), name_of_incident_particle) *
                 (0.5 * (twom_e_ctwo_btwo_dtwo_w(beta.clone(), gamma.clone(), energy.clone(), element_exci_energy, name_of_incident_particle).ln() - beta.clone().pow(2) -
-                density_effect_correction(beta.clone(), gamma))); // Missing for now value of δ(βγ) which is currently 1.0
+                density_effect_correction(beta.clone(), gamma.clone()))); // Missing for now value of δ(βγ) which is currently 1.0
         de_dx_array.push(de_dx);
     }
     println!("<-dE/dx>: {:?}", de_dx_array);
@@ -119,9 +119,14 @@ fn density_effect_correction(beta: Float, gamma: Float) -> Float {
     // δ(βγ)/2 → ln(ℏωp/I) + ln βγ − 1/2
     // Mainly this δ(βγ)/2
 
-    // 34.2.5 Density effec
+    // 34.2.5 Density effect
     // PDG: https://pdg.lbl.gov/2024/reviews/rpp2024-rev-passage-particles-matter.pdf
-    // Use Sternheimer parameterizatino
+    // Use Sternheimer parameterization (Equation 34.7)
+
+    // δ(βγ)/2 = { 2 (ln 10)x - C^-,                x >= x1
+    //           { 2 (ln 10)x - C^- + a(x1 - x)^k , x0 <= x < x1
+    //           { 0,                               x < x0 (nonconductors)
+    //           { δ_0 10^2(x-x_0),                 x < x0 (conductors)
 
 
     precise("1.0")
