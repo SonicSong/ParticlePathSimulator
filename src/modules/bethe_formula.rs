@@ -63,7 +63,6 @@ fn avogadro_ret() -> Float {
 }
 
 pub fn low_energies_calc(name_of_element: &str, name_of_incident_particle: &str) {
-    //Figured out mostly stuff regarding rug::Float. convert every single f64 to rug::Float for more precision.
 
     let PRECISION_BITS: u32 = crate::modules::atomic_vars::PRECISION.load(Ordering::Relaxed) as u32;
 
@@ -101,7 +100,8 @@ pub fn low_energies_calc(name_of_element: &str, name_of_incident_particle: &str)
         // This formula is for Stopping power at intermediate energies
         let de_dx: Float = k_z_two_z_a_1_b_two(name_of_element, beta.clone(), name_of_incident_particle) *
                 (0.5 * (twom_e_ctwo_btwo_dtwo_w(beta.clone(), gamma.clone(), energy.clone(), element_exci_energy, name_of_incident_particle).ln() - beta.clone().pow(2) -
-                density_effect_correction(beta.clone(), gamma.clone()))); // Missing for now value of δ(βγ) which is currently 1.0
+                density_effect_correction(beta.clone(), gamma.clone(), plasma_energy(name_of_element)
+                                          , "Si"))); // Missing for now value of δ(βγ) which is currently 1.0
         de_dx_array.push(de_dx);
     }
     println!("<-dE/dx>: {:?}", de_dx_array);
@@ -115,9 +115,13 @@ fn m_e_cpowit() -> Float {
     result
 }
 
-fn density_effect_correction(beta: Float, gamma: Float) -> Float {
+fn density_effect_correction(beta: Float, gamma: Float, plasma: Float, mean_exci_energy: &str) -> Float {
+    // Important to calculate Density effect correction
+    // https://pdg.lbl.gov/2024/reviews/rpp2024-rev-passage-particles-matter.pdf
+    // Equation 34.6
     // δ(βγ)/2 → ln(ℏωp/I) + ln βγ − 1/2
-    // Mainly this δ(βγ)/2
+
+    let mut logarighm_plasma_energy: Float = (plasma * precise("1.0")).ln();
 
     // 34.2.5 Density effect
     // PDG: https://pdg.lbl.gov/2024/reviews/rpp2024-rev-passage-particles-matter.pdf
@@ -132,8 +136,30 @@ fn density_effect_correction(beta: Float, gamma: Float) -> Float {
     precise("1.0")
 }
 
-fn shell_correction() {
+fn plasma_energy(name_of_element: &str) -> Float {
+    // Important to calculate Density effect correction
+    // https://pdg.lbl.gov/2024/reviews/rpp2024-rev-passage-particles-matter.pdf
+    // ℏωp = √ρ*〈Z/A〉 × 28.816 eV
+    // ρ in g cm^-3
+
+    // TODO: Verify if the calculation is correct as for now it might be simply wrong because of my lack of knowledge
+
+    let calc_const: Float = precise("28.816");
+
+    if let Some((atom_density, atom_number, mass_number)) = periodic_lookup::look_up_element(name_of_element) {
+        let mut result: Float = atom_density * (atom_number.clone() / mass_number.clone());
+        result = result.sqrt() * calc_const;
+        result
+    } else {
+        eprintln!("Element {} not found or density is unavailable.", name_of_element);
+        precise("0.0")
+    }
+}
+
+fn shell_correction() -> Float{
     //TODO: Implement shell correction formula
+
+    precise("0.0")
 }
 
 fn k_z_two_z_a_1_b_two(name_of_element: &str, beta: Float, name_of_incident_particle: &str) -> Float {
@@ -196,19 +222,6 @@ fn calculate_incident_particle_mass(name_of_incident_particle: &str) -> Float{
             precise("0.0")
         }
     }
-}
-
-fn plasma_energy(name_of_element: &str) -> Float {
-    // https://pdg.lbl.gov/2024/reviews/rpp2024-rev-passage-particles-matter.pdf
-    // √ρ*〈Z/A〉 × 28.816 eV
-    // ρ in g cm^-3
-
-
-    if let Some((atom_density, atom_number, mass_number)) = periodic_lookup::look_up_element(name_of_element) {
-
-    }
-
-    precise("0.0")
 }
 
 fn wmax(beta: Float, gamma: Float, m_e_cpowit: Float, name_of_incident_particle: &str) -> Float {

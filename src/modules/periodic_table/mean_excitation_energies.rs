@@ -4,7 +4,7 @@ pub trait CustomProperties {
     fn custom_mean_excitation_energy(&self) -> Option<f64>;
 }
 
-//TODO: Make custom_mean_excitation_energy to be compatible with new dataset that will include more data.
+// TODO: Later remove this and use ANPM crate when I finish it to make proper use of data provided by PDG.
 
 impl CustomProperties for Element {
     fn custom_mean_excitation_energy(&self) -> Option<f64> {
