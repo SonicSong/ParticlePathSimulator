@@ -198,6 +198,19 @@ fn calculate_incident_particle_mass(name_of_incident_particle: &str) -> Float{
     }
 }
 
+fn plasma_energy(name_of_element: &str) -> Float {
+    // https://pdg.lbl.gov/2024/reviews/rpp2024-rev-passage-particles-matter.pdf
+    // √ρ*〈Z/A〉 × 28.816 eV
+    // ρ in g cm^-3
+
+
+    if let Some((atom_density, atom_number, mass_number)) = periodic_lookup::look_up_element(name_of_element) {
+
+    }
+
+    precise("0.0")
+}
+
 fn wmax(beta: Float, gamma: Float, m_e_cpowit: Float, name_of_incident_particle: &str) -> Float {
     // https://pdg.lbl.gov/2022/reviews/rpp2022-rev-passage-particles-matter.pdf?
     // 34.2.2 Maximum energy transfer to an electron in a single collision
