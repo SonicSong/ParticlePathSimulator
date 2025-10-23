@@ -6,7 +6,7 @@ use num::traits::real::Real;
 use std::sync::atomic::Ordering;
 use modules::atomic_vars;
 
-//TODO: Replace all f64 to rug::Float for better precision during calculations
+//DONE: Replace all f64 to rug::Float for better precision during calculations
 //TODO: Set global variable that can be changed in settings on runtime that defines the precision of Floats for "low-end machines"
 // (Not sure how memory usage will spike so will start from small values)
 use rug::{Assign, Float};
@@ -47,22 +47,24 @@ fn light_speed_ret() -> Float {
     light_spd
 }
 
-fn electron_mass_ret() -> Float {
+fn electron_mass_constant() -> Float {
     let electron_mass = precise("9.1093837e-31");
     electron_mass
 }
 
-fn planck_ret() -> Float {
+fn planck_constant() -> Float {
     let planck = precise("6.62607015e-34");
     planck
 }
 
-fn avogadro_ret() -> Float {
-    let avogadro = precise("6.02214076e23");
+fn avogadro_constant() -> Float {
+    let avogadro = precise("6.02214076e23"); // mol^-1
     avogadro
 }
 
-pub fn low_energies_calc(name_of_element: &str, name_of_incident_particle: &str) {
+pub fn stopping_power_intermediate_energies(name_of_element: &str, name_of_incident_particle: &str) {
+    // https://pdg.lbl.gov/2024/reviews/rpp2024-rev-passage-particles-matter.pdf
+    // Equation 34.5
 
     let PRECISION_BITS: u32 = crate::modules::atomic_vars::PRECISION.load(Ordering::Relaxed) as u32;
 
@@ -105,26 +107,34 @@ pub fn low_energies_calc(name_of_element: &str, name_of_incident_particle: &str)
         de_dx_array.push(de_dx);
     }
     println!("<-dE/dx>: {:?}", de_dx_array);
-    println!("Velocity: {:?}", velocity);
+    // println!("Velocity: {:?}", velocity);
 
     // println!("dE/dx:  J/m");
 }
 
 fn m_e_cpowit() -> Float {
-    let result = electron_mass_ret() * light_speed_ret().pow(2);
+    // https://pdg.lbl.gov/2024/reviews/rpp2024-rev-passage-particles-matter.pdf#table.caption.1
+    // Table 34.1
+    // m_e * c^2
+    // Electron mass x c^2
+    let result = electron_mass_constant() * light_speed_ret().pow(2);
     result
 }
 
 fn density_effect_correction(beta: Float, gamma: Float, plasma: Float, mean_exci_energy: &str) -> Float {
     // Important to calculate Density effect correction
+    // NOTE: From what I understand this is basically density effect
     // https://pdg.lbl.gov/2024/reviews/rpp2024-rev-passage-particles-matter.pdf
     // Equation 34.6
     // δ(βγ)/2 → ln(ℏωp/I) + ln βγ − 1/2
 
     let mut logarighm_plasma_energy: Float = (plasma * precise("1.0")).ln();
+    let logarithm_beta_gamma: Float = (beta.clone() * gamma.clone()).ln();
+    let res_beta_gamma_plasma: Float = logarighm_plasma_energy.clone() + logarithm_beta_gamma.clone() - (precise("1") / precise("2"));
 
     // 34.2.5 Density effect
     // PDG: https://pdg.lbl.gov/2024/reviews/rpp2024-rev-passage-particles-matter.pdf
+    // NOTE: And this should be correction for density effect...
     // Use Sternheimer parameterization (Equation 34.7)
 
     // δ(βγ)/2 = { 2 (ln 10)x - C^-,                x >= x1
@@ -132,6 +142,9 @@ fn density_effect_correction(beta: Float, gamma: Float, plasma: Float, mean_exci
     //           { 0,                               x < x0 (nonconductors)
     //           { δ_0 10^2(x-x_0),                 x < x0 (conductors)
 
+    // x = log_10 βγ = log_10 (p/Mc)
+
+    let log_beta_gamma: Float = (beta.clone() * gamma.clone()).log10();
 
     precise("1.0")
 }
@@ -144,10 +157,13 @@ fn plasma_energy(name_of_element: &str) -> Float {
 
     // TODO: Verify if the calculation is correct as for now it might be simply wrong because of my lack of knowledge
 
+    // TODO: Figure out a way to calculate for compounds
+    // Based on the data found for example on https://pdg.lbl.gov/2024/AtomicNuclearProperties/HTML/calcium_fluoride.html it seems like it does provide <Z/A> value
+
     let calc_const: Float = precise("28.816");
 
     if let Some((atom_density, atom_number, mass_number)) = periodic_lookup::look_up_element(name_of_element) {
-        let mut result: Float = atom_density * (atom_number.clone() / mass_number.clone());
+        let mut result: Float = atom_density.clone() * (atom_number.clone() / mass_number.clone());
         result = result.sqrt() * calc_const;
         result
     } else {
@@ -164,9 +180,9 @@ fn shell_correction() -> Float{
 
 fn k_z_two_z_a_1_b_two(name_of_element: &str, beta: Float, name_of_incident_particle: &str) -> Float {
     //K = 4π * N * A* r^2_e * m_e * c^2     0.307075 MeV mol^−1 cm^2
-    //z = -1 for electron
-    //z = +1 for proton
-    //z = +5 for Boron
+    //Z = -1 for electron
+    //Z = +1 for proton
+    //Z = +5 for Boron
 
     if let Some((atom_density, atom_number, mass_number)) = periodic_lookup::look_up_element(name_of_element) {
         let z_inci = if name_of_incident_particle == "Ele" {
@@ -193,13 +209,16 @@ fn k_z_two_z_a_1_b_two(name_of_element: &str, beta: Float, name_of_incident_part
 
 fn twom_e_ctwo_btwo_dtwo_w(beta: Float, gamma: Float, m_e_cpowit: Float, element_exci_energy: Element, name_of_incident_particle: &str) -> Float {
     // Clone the values before using them in wmax
-    let wmax_result = wmax(beta.clone(), gamma.clone(), m_e_cpowit.clone(), name_of_incident_particle);
-    let twom_e_ctwo = precise("2.0") * &m_e_cpowit * beta.pow(2) * gamma.pow(2) * wmax_result;
+    let wmax_result: Float = wmax(beta.clone(), gamma.clone(), m_e_cpowit.clone(), name_of_incident_particle);
+    let twom_e_ctwo: Float = precise("2.0") * &m_e_cpowit * beta.pow(2) * gamma.pow(2) * wmax_result;
 
     // Get mean excitation energy
-    match element_exci_energy.custom_mean_excitation_energy() {
-        Some(i_powi_two) => twom_e_ctwo / i_powi_two.pow(2),
-        None => precise("0.0"),
+    if let Some((excitation_energy)) = mean_excitation_energy(name_of_incident_particle) {
+        let result: Float = twom_e_ctwo.clone() * excitation_energy.clone();
+        result
+    } else {
+        eprintln!("Element {} not found or density is unavaiable. (2 * m_e * c^2 * β^2 * γ^2)", name_of_incident_particle);
+        precise("0.0")
     }
 }
 
@@ -214,11 +233,11 @@ fn calculate_incident_particle_mass(name_of_incident_particle: &str) -> Float{
             result
         }
     } else {
-        if let Some((mass_number)) = periodic_lookup::look_up_element_weight(name_of_incident_particle) {
+        if let Some((mass_number)) = periodic_lookup::look_up_element_mass(name_of_incident_particle) {
             let result = mass_number * uni_amu;
             result
         } else {
-            eprintln!("Element {} not found or density is unavailable.", name_of_incident_particle);
+            eprintln!("Element {} not found or density is unavailable. (Incident particle mass)", name_of_incident_particle);
             precise("0.0")
         }
     }
@@ -227,6 +246,8 @@ fn calculate_incident_particle_mass(name_of_incident_particle: &str) -> Float{
 fn wmax(beta: Float, gamma: Float, m_e_cpowit: Float, name_of_incident_particle: &str) -> Float {
     // https://pdg.lbl.gov/2022/reviews/rpp2022-rev-passage-particles-matter.pdf?
     // 34.2.2 Maximum energy transfer to an electron in a single collision
+
+    // W_max = (2 * m_e * c^2 * β^2 * γ^2)/(1 + 2 * γ * m_e / M + (m_e / M)^2)
 
     //TODO: Not compatible with electrons. Need to do find the calculation for Wmax that doesn't divide electron mass by electron mass.
     if (name_of_incident_particle == "Ele") {

@@ -54,10 +54,13 @@ pub fn look_up_element(symbol_name: &str) -> Option<(Float, Float, Float)> {
     }
 }
 
-pub fn look_up_element_weight(symbol_name: &str) -> Option<Float> {
+pub fn look_up_element_mass(symbol_name: &str) -> Option<Float> {
     match symbol_name {
         "Si" => Some(bethe_formula::precise("28.0855")), // A
         "C" => Some(bethe_formula::precise("12.0107")),
+        "Al" => Some(bethe_formula::precise("26.9815")),
+        "Au" => Some(bethe_formula::precise("196.966569")),
+        "Cu" => Some(bethe_formula::precise("63.546")),
         _ => None, // fallback
     }
 }
