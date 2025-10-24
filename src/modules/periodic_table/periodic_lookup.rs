@@ -56,6 +56,7 @@ pub fn look_up_element(symbol_name: &str) -> Option<(Float, Float, Float)> {
 
 pub fn look_up_element_mass(symbol_name: &str) -> Option<Float> {
     match symbol_name {
+        "B" => Some(bethe_formula::precise("10.817")),
         "Si" => Some(bethe_formula::precise("28.0855")), // A
         "C" => Some(bethe_formula::precise("12.0107")),
         "Al" => Some(bethe_formula::precise("26.9815")),

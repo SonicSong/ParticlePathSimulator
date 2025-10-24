@@ -62,17 +62,18 @@ fn avogadro_constant() -> Float {
     avogadro
 }
 
-pub fn stopping_power_intermediate_energies(name_of_element: &str, name_of_incident_particle: &str) {
+pub fn stopping_power_intermediate_energies(name_of_incident_particle: &str, name_of_absorber: &str) {
     // https://pdg.lbl.gov/2024/reviews/rpp2024-rev-passage-particles-matter.pdf
     // Equation 34.5
 
     let PRECISION_BITS: u32 = crate::modules::atomic_vars::PRECISION.load(Ordering::Relaxed) as u32;
 
-    println!("\n Element: {}", name_of_element);
+    println!("Name of incident particle: {}", name_of_incident_particle);
+    println!("Name of absorber {}", name_of_absorber);
 
     let element_exci_energy = match Element::iter().find(|e:&Element|
-        e.symbol().eq_ignore_ascii_case(name_of_element) ||
-            e.name().eq_ignore_ascii_case(name_of_element)) {
+        e.symbol().eq_ignore_ascii_case(name_of_absorber) ||
+            e.name().eq_ignore_ascii_case(name_of_absorber)) {
         Some(e) => e,
         None => panic!(),
     };
@@ -100,9 +101,9 @@ pub fn stopping_power_intermediate_energies(name_of_element: &str, name_of_incid
 
         // Equation taken from https://pdg.lbl.gov/2024/reviews/rpp2024-rev-passage-particles-matter.pdf at 34.2.3
         // This formula is for Stopping power at intermediate energies
-        let de_dx: Float = k_z_two_z_a_1_b_two(name_of_element, beta.clone(), name_of_incident_particle) *
-                (0.5 * (twom_e_ctwo_btwo_dtwo_w(beta.clone(), gamma.clone(), energy.clone(), element_exci_energy, name_of_incident_particle).ln() - beta.clone().pow(2) -
-                density_effect_correction(beta.clone(), gamma.clone(), plasma_energy(name_of_element)
+        let de_dx: Float = k_z_two_z_a_1_b_two(name_of_incident_particle, beta.clone(), name_of_absorber) *
+                (0.5 * (twom_e_ctwo_btwo_dtwo_w(beta.clone(), gamma.clone(), energy.clone(), element_exci_energy, name_of_absorber).ln() - beta.clone().pow(2) -
+                density_effect_correction(beta.clone(), gamma.clone(), plasma_energy(name_of_incident_particle)
                                           , "Si"))); // Missing for now value of δ(βγ) which is currently 1.0
         de_dx_array.push(de_dx);
     }
@@ -161,7 +162,6 @@ fn plasma_energy(name_of_element: &str) -> Float {
     // Based on the data found for example on https://pdg.lbl.gov/2024/AtomicNuclearProperties/HTML/calcium_fluoride.html it seems like it does provide <Z/A> value
 
     let calc_const: Float = precise("28.816");
-
     if let Some((atom_density, atom_number, mass_number)) = periodic_lookup::look_up_element(name_of_element) {
         let mut result: Float = atom_density.clone() * (atom_number.clone() / mass_number.clone());
         result = result.sqrt() * calc_const;
@@ -178,18 +178,19 @@ fn shell_correction() -> Float{
     precise("0.0")
 }
 
-fn k_z_two_z_a_1_b_two(name_of_element: &str, beta: Float, name_of_incident_particle: &str) -> Float {
+fn k_z_two_z_a_1_b_two(name_of_absorber: &str, beta: Float, name_of_incident_particle: &str) -> Float {
     //K = 4π * N * A* r^2_e * m_e * c^2     0.307075 MeV mol^−1 cm^2
-    //Z = -1 for electron
-    //Z = +1 for proton
-    //Z = +5 for Boron
+    //z = -1 for electron
+    //z = +1 for proton
+    //Example for particle
+    //z = +5 for Boron
 
-    if let Some((atom_density, atom_number, mass_number)) = periodic_lookup::look_up_element(name_of_element) {
+    if let Some((atom_density, atom_number, mass_number)) = periodic_lookup::look_up_element(name_of_absorber) {
         let z_inci = if name_of_incident_particle == "Ele" {
             precise("-1.0")
         } else if name_of_incident_particle == "Proto" {
             precise("1.0")
-        } else if name_of_element != "Ele" && name_of_element != "Proto" {
+        } else if name_of_absorber != "Ele" && name_of_absorber != "Proto"  && name_of_absorber != "" {
             atom_number.clone()
         } else {
             // Default electron
@@ -202,7 +203,7 @@ fn k_z_two_z_a_1_b_two(name_of_element: &str, beta: Float, name_of_incident_part
         let result: Float = k_z_two * z_by_a * one_by_beta;
         result
     } else {
-        eprintln!("Element {} not found or density is unavailable.", name_of_element);
+        eprintln!("Element {} not found or density is unavailable.", name_of_absorber);
         precise("0.0")
     }
 }

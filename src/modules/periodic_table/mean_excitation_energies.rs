@@ -4,6 +4,9 @@ use modules::bethe_formula;
 use crate::modules;
 pub fn mean_excitation_energy(symbol_name: &str) -> Option<Float> {
     match symbol_name {
+        "B" => Some(
+            bethe_formula::precise("76.0")
+        ),
         "Si" => Some(
             bethe_formula::precise("173.0")
         ),
