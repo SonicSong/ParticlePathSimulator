@@ -103,8 +103,7 @@ pub fn stopping_power_intermediate_energies(name_of_incident_particle: &str, nam
         // This formula is for Stopping power at intermediate energies
         let de_dx: Float = k_z_two_z_a_1_b_two(name_of_incident_particle, beta.clone(), name_of_absorber) *
                 (0.5 * (twom_e_ctwo_btwo_dtwo_w(beta.clone(), gamma.clone(), energy.clone(), element_exci_energy, name_of_absorber).ln() - beta.clone().pow(2) -
-                density_effect_correction(beta.clone(), gamma.clone(), plasma_energy(name_of_incident_particle)
-                                          , "Si"))); // Missing for now value of δ(βγ) which is currently 1.0
+                density_effect_correction(beta.clone(), gamma.clone(), plasma_energy(name_of_incident_particle), name_of_incident_particle))); // Missing for now value of δ(βγ) which is currently just
         de_dx_array.push(de_dx);
     }
     println!("<-dE/dx>: {:?}", de_dx_array);
@@ -150,7 +149,8 @@ fn density_effect_correction(beta: Float, gamma: Float, plasma: Float, mean_exci
 
     let log_beta_gamma: Float = (beta.clone() * gamma.clone()).log10();
 
-    precise("1.0")
+    // I know I need to use Sternheimer parameterization for this but for now it's better than nothing.
+    res_beta_gamma_plasma
 }
 
 fn plasma_energy(name_of_element: &str) -> Float {
@@ -188,12 +188,15 @@ fn k_z_two_z_a_1_b_two(name_of_absorber: &str, beta: Float, name_of_incident_par
     //Example for particle
     //z = +5 for Boron
 
-    if let Some((atom_density, atom_number, mass_number)) = periodic_lookup::look_up_element(name_of_absorber) {
+    // From what I learned z in practice should accept custom inputs because of how charge number of incident particle works.
+    // So more correct for Boron would be -3 and +3. Not +5 because it shouldn't be element atom_number
+
+    if let Some((atom_density, atom_number, mass_number)) = periodic_lookup::look_up_element(name_of_incident_particle) {
         let z_inci = if name_of_incident_particle == "Ele" {
             precise("-1.0")
         } else if name_of_incident_particle == "Proto" {
             precise("1.0")
-        } else if name_of_absorber != "Ele" && name_of_absorber != "Proto"  && name_of_absorber != "" {
+        } else if name_of_incident_particle != "Ele" && name_of_incident_particle != "Proto"  && name_of_incident_particle != "" {
             atom_number.clone()
         } else {
             // Default electron
@@ -212,13 +215,16 @@ fn k_z_two_z_a_1_b_two(name_of_absorber: &str, beta: Float, name_of_incident_par
 }
 
 fn twom_e_ctwo_btwo_dtwo_w(beta: Float, gamma: Float, m_e_cpowit: Float, element_exci_energy: Element, name_of_incident_particle: &str) -> Float {
+    // 2 * m_e * c^2 * β^2 * γ^2 * W_max
+    // / I^2
+
     // Clone the values before using them in wmax
     let wmax_result: Float = wmax(beta.clone(), gamma.clone(), m_e_cpowit.clone(), name_of_incident_particle);
-    let twom_e_ctwo: Float = precise("2.0") * &m_e_cpowit * beta.pow(2) * gamma.pow(2) * wmax_result;
+    let twom_e_ctwo: Float = precise("2.0") * m_e_cpowit.clone() * beta.clone().pow(2) * gamma.clone().pow(2) * wmax_result;
 
     // Get mean excitation energy
     if let Some((excitation_energy)) = mean_excitation_energy(name_of_incident_particle) {
-        let result: Float = twom_e_ctwo.clone() * excitation_energy.clone();
+        let result: Float = twom_e_ctwo.clone() / excitation_energy.clone();
         result
     } else {
         eprintln!("Element {} not found or density is unavaiable. (2 * m_e * c^2 * β^2 * γ^2)", name_of_incident_particle);
@@ -251,7 +257,8 @@ fn wmax(beta: Float, gamma: Float, m_e_cpowit: Float, name_of_incident_particle:
     // https://pdg.lbl.gov/2024/reviews/rpp2024-rev-passage-particles-matter.pdf
     // 34.2.2 Maximum energy transfer to an electron in a single collision
 
-    // W_max = (2 * m_e * c^2 * β^2 * γ^2)/(1 + 2 * γ * m_e / M + (m_e / M)^2)
+    // W_max = (2 * m_e * c^2 * β^2 * γ^2)
+    // /(1 + 2 * γ * m_e / M + (m_e / M)^2)
 
     // Electron mass is required, but it simply confuses me because in the paper it uses both m_e * c^2 and m_e alone without c^2. In constants, it only states for m_e without c^2.
     // So it doesn't make any sense to me and how to differentiate when to use which one.
@@ -260,14 +267,19 @@ fn wmax(beta: Float, gamma: Float, m_e_cpowit: Float, name_of_incident_particle:
     // So which one is it supposed to be? Because in the formula for W_max it uses both m_e * c^2 and m_e alone without c^2.
     // In notation https://pdg.lbl.gov/2024/reviews/rpp2024-rev-passage-particles-matter.pdf#table.caption.1 it states that it's m_e * c^2 = 0.51099895000 MeV. and it's definition is electron mass x c^2.
 
+    // Worst possible source but let's go with it for now. Based on what I found on wikipedia for electron mass (https://en.wikipedia.org/wiki/Electron_mass).
+    // Both m_e and m_e*c^2 values are the same. Only difference between those two is units. One is with MeV/c^2 and other one is with just MeV
+
     //TODO: Not compatible with electrons. Need to do find the calculation for Wmax that doesn't divide electron mass by electron mass.
     if (name_of_incident_particle == "Ele") {
         let result = precise("1.0");
         result
     } else {
-        let two_m_e_ctwo: Float = precise("2.0") * m_e_cpowit * beta.clone().pow(2) * gamma.clone().pow(2);
-        let one_two_gamma_m_e: Float = 1.0 + ((precise("2.0") * gamma * precise("0.51099895000")) / calculate_incident_particle_mass(name_of_incident_particle))
-            + (precise("0.51099895000") / calculate_incident_particle_mass(name_of_incident_particle)).pow(2);
+        let two_m_e_ctwo: Float = precise("2.0") * m_e_cpowit.clone() * beta.clone().pow(2) * gamma.clone().pow(2);
+        let one_two_gamma_m_e: Float = precise("1.0") + precise("2.0") * gamma * m_e_cpowit.clone() //precise("0.51099895000"))
+            / calculate_incident_particle_mass(name_of_incident_particle).clone()
+            + m_e_cpowit.clone() //(precise("0.51099895000")
+            / calculate_incident_particle_mass(name_of_incident_particle).clone();
         //TODO: Verify if the incident particle mass is calculated correctly.
         let result = two_m_e_ctwo/one_two_gamma_m_e;
         result
