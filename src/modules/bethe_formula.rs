@@ -133,7 +133,7 @@ fn density_effect_correction(beta: Float, gamma: Float, plasma: Float, mean_exci
 
     let logarithm_plasma_energy: Float = (plasma * precise("1.0")).ln();
     let logarithm_beta_gamma: Float = (beta.clone() * gamma.clone()).ln();
-    let res_beta_gamma_plasma: Float = logarithm_plasma_energy.clone() + logarithm_beta_gamma.clone() - (precise("1") / precise("2"));
+    let res_beta_gamma_plasma: Float = logarithm_plasma_energy.clone() + logarithm_beta_gamma.clone() - precise("0.5");
 
     // 34.2.5 Density effect
     // PDG: https://pdg.lbl.gov/2024/reviews/rpp2024-rev-passage-particles-matter.pdf
@@ -159,6 +159,11 @@ fn plasma_energy(name_of_element: &str) -> Float {
     // ℏωp = √ρ*〈Z/A〉 × 28.816 eV
     // ρ in g cm^-3
 
+    // 27.10.2025
+    // In theory, I could just use ANPM (WHEN IT'S DONE FOR THE LOVE OF GOD I AM STILL NOT DONE WITH THAT CRATE AND I NEED IT.) and get values for ℏωp from there as for example
+    // plasma energy of Si is just 31.05 eV (Taken from here https://pdg.lbl.gov/2024/AtomicNuclearProperties/HTML/silicon_Si.html).
+    // So I might just skip calculating it as I might be not sure if it's being calculated correctly (But even so the calculations seem close enough as I don't round up the result)
+
     // TODO: Verify if the calculation is correct as for now it might be simply wrong because of my lack of knowledge
 
     // TODO: Figure out a way to calculate for compounds
@@ -168,11 +173,14 @@ fn plasma_energy(name_of_element: &str) -> Float {
     if let Some((atom_density, atom_number, mass_number)) = periodic_lookup::look_up_element(name_of_element) {
         let mut result: Float = atom_density.clone() * (atom_number.clone() / mass_number.clone());
         result = result.sqrt() * calc_const;
+        // println!("Plasma energy: {}", result.clone());
         result
     } else {
         eprintln!("Element {} not found or density is unavailable.", name_of_element);
         precise("0.0")
     }
+    // let result: Float = precise("32.86");
+    // result
 }
 
 fn shell_correction() -> Float{
@@ -260,6 +268,8 @@ fn wmax(beta: Float, gamma: Float, m_e_cpowit: Float, name_of_incident_particle:
     // W_max = (2 * m_e * c^2 * β^2 * γ^2)
     // /(1 + 2 * γ * m_e / M + (m_e / M)^2)
 
+
+    // 26.10.2025
     // Electron mass is required, but it simply confuses me because in the paper it uses both m_e * c^2 and m_e alone without c^2. In constants, it only states for m_e without c^2.
     // So it doesn't make any sense to me and how to differentiate when to use which one.
     // In this paper https://pdg.lbl.gov/2024/reviews/rpp2024-rev-phys-constants.pdf it states electron mass as m_e = 0.51099895000 MeV/c^2.
