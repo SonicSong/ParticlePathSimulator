@@ -32,7 +32,7 @@ fn main() {
     // let mut TEST_PRECISION_S_t = Float::new(PRECISION_BITS);
     //
     // let mut SUM = Float::new(PRECISION_BITS);
-    // TEST_PRECISION_S.assign(Float::parse("0.101").expect("Invalid float string"));
+    // TEST_PRECISION_S.assign(Float::parse("0.51099895000").expect("Invalid float string"));
     // TEST_PRECISION_S_t.assign(Float::parse("2.000").expect("Invalid float string"));
     // SUM.assign(&TEST_PRECISION_S + &TEST_PRECISION_S_t);
     // println!("TEST ADDITION {:?}", SUM);
@@ -41,8 +41,8 @@ fn main() {
     // print_type_of(&TEST_PRECISION);
     // println!("Precision str: {} <- RUG W/STRING", TEST_PRECISION_S);
     // print_type_of(&TEST_PRECISION_S);
-    // println!("PRECISION: {:.1024} <- f64", 0.101f64 * 5000f64);
-    // print_type_of(&0.001f64);
+    // println!("PRECISION: {:.64} <- f64", 0.51099895000f64);
+    // print_type_of(&0.51099895000f64);
 
     // print!("Write the symbol of element: ");
     // let mut name_of_element = String::new();

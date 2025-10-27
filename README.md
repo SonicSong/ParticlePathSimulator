@@ -11,6 +11,16 @@ ParticlePathSimulator is an open scientific project. It exists to advance public
 - [ ] Implement Particle path graphing.
 - [ ] Make it work on Windows, Linux, MacOS. X86_64 and aarch64 CPU's architecture
 
+## References
+- "SRIM - The Stopping and Range of Ions in Matter" - James F. Ziegler, Jochen P. Biersack, Matthias D. Ziegler
+- https://pdg.lbl.gov/2024/reviews/rpp2024-rev-passage-particles-matter.pdf
+- https://pdg.lbl.gov/rpp/encoders/pdg_note_1901.pdf
+- https://pdg.lbl.gov/2024/AtomicNuclearProperties/
+- https://pdg.lbl.gov/2024/AtomicNuclearProperties/adndt.pdf
+- https://indico.cern.ch/event/825436/contributions/3487429/attachments/1879446/3096088/densityeffecttalk.pdf
+- https://pdg.lbl.gov/2024/reviews/rpp2024-rev-phys-constants.pdf
+- https://arxiv.org/abs/2201.05791
+
 ## Project Philosophy
 PPS is not a commercial product, nor a school assignment.  
 It’s an open scientific project built for curiosity, learning, and contribution to the broader understanding of how particles interact with matter.

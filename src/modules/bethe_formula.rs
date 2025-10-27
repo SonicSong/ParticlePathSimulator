@@ -86,7 +86,7 @@ pub fn stopping_power_intermediate_energies(name_of_incident_particle: &str, nam
 
     for i in 1i32..1000i32 {
         let i_t: Float = precise(&format!("{}", i)) * precise("0.001");
-        let mut beta: Float = (i_t.clone() * light_speed_ret()) / light_speed_ret();
+        let beta: Float = (i_t.clone() * light_speed_ret()) / light_speed_ret();
 
         let denominator: Float = precise("1.0") - ((i_t.clone() * light_speed_ret()) / light_speed_ret()).pow(2);
         let gamma: Float;
@@ -118,7 +118,10 @@ fn m_e_cpowit() -> Float {
     // Table 34.1
     // m_e * c^2
     // Electron mass x c^2
-    let result = electron_mass_constant() * light_speed_ret().pow(2);
+    let result: Float = precise("0.51099895000"); // MeV
+    // 0.51099895000(15) MeV
+    // No idea what 15 in brackets means in the PDG document. The best thing I can think of is repeated decimal but not sure.
+    // let result = electron_mass_constant() * light_speed_ret().pow(2);
     result
 }
 
@@ -129,9 +132,9 @@ fn density_effect_correction(beta: Float, gamma: Float, plasma: Float, mean_exci
     // Equation 34.6
     // δ(βγ)/2 → ln(ℏωp/I) + ln βγ − 1/2
 
-    let mut logarighm_plasma_energy: Float = (plasma * precise("1.0")).ln();
+    let logarithm_plasma_energy: Float = (plasma * precise("1.0")).ln();
     let logarithm_beta_gamma: Float = (beta.clone() * gamma.clone()).ln();
-    let res_beta_gamma_plasma: Float = logarighm_plasma_energy.clone() + logarithm_beta_gamma.clone() - (precise("1") / precise("2"));
+    let res_beta_gamma_plasma: Float = logarithm_plasma_energy.clone() + logarithm_beta_gamma.clone() - (precise("1") / precise("2"));
 
     // 34.2.5 Density effect
     // PDG: https://pdg.lbl.gov/2024/reviews/rpp2024-rev-passage-particles-matter.pdf
@@ -245,10 +248,17 @@ fn calculate_incident_particle_mass(name_of_incident_particle: &str) -> Float{
 }
 
 fn wmax(beta: Float, gamma: Float, m_e_cpowit: Float, name_of_incident_particle: &str) -> Float {
-    // https://pdg.lbl.gov/2022/reviews/rpp2022-rev-passage-particles-matter.pdf?
+    // https://pdg.lbl.gov/2024/reviews/rpp2024-rev-passage-particles-matter.pdf
     // 34.2.2 Maximum energy transfer to an electron in a single collision
 
     // W_max = (2 * m_e * c^2 * β^2 * γ^2)/(1 + 2 * γ * m_e / M + (m_e / M)^2)
+
+    // Electron mass is required, but it simply confuses me because in the paper it uses both m_e * c^2 and m_e alone without c^2. In constants, it only states for m_e without c^2.
+    // So it doesn't make any sense to me and how to differentiate when to use which one.
+    // In this paper https://pdg.lbl.gov/2024/reviews/rpp2024-rev-phys-constants.pdf it states electron mass as m_e = 0.51099895000 MeV/c^2.
+    // But in the review for passage of particles through matter it uses m_e * c^2 = 0.51099895000 MeV.
+    // So which one is it supposed to be? Because in the formula for W_max it uses both m_e * c^2 and m_e alone without c^2.
+    // In notation https://pdg.lbl.gov/2024/reviews/rpp2024-rev-passage-particles-matter.pdf#table.caption.1 it states that it's m_e * c^2 = 0.51099895000 MeV. and it's definition is electron mass x c^2.
 
     //TODO: Not compatible with electrons. Need to do find the calculation for Wmax that doesn't divide electron mass by electron mass.
     if (name_of_incident_particle == "Ele") {
