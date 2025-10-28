@@ -241,6 +241,8 @@ fn twom_e_ctwo_btwo_dtwo_w(beta: Float, gamma: Float, m_e_cpowit: Float, element
 }
 
 fn calculate_incident_particle_mass(name_of_incident_particle: &str) -> Float{
+    // M    incident particle mass    MeV/c^2
+
     let uni_amu: Float = precise("931.4941024228");
     if (name_of_incident_particle == "Ele" || name_of_incident_particle == "Proto") {
         if (name_of_incident_particle == "Ele") {
@@ -278,7 +280,7 @@ fn wmax(beta: Float, gamma: Float, m_e_cpowit: Float, name_of_incident_particle:
     // In notation https://pdg.lbl.gov/2024/reviews/rpp2024-rev-passage-particles-matter.pdf#table.caption.1 it states that it's m_e * c^2 = 0.51099895000 MeV. and it's definition is electron mass x c^2.
 
     // Worst possible source but let's go with it for now. Based on what I found on wikipedia for electron mass (https://en.wikipedia.org/wiki/Electron_mass).
-    // Both m_e and m_e*c^2 values are the same. Only difference between those two is units. One is with MeV/c^2 and other one is with just MeV
+    // Both m_e and m_e*c^2 values are the same. Only difference between those two are units. One is with MeV/c^2 and other one is with just MeV
 
     //TODO: Not compatible with electrons. Need to do find the calculation for Wmax that doesn't divide electron mass by electron mass.
     if (name_of_incident_particle == "Ele") {

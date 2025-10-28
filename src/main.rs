@@ -48,7 +48,7 @@ fn main() {
     // let mut name_of_element = String::new();
     // stdin().read_line(&mut name_of_element).expect("Element symbol");
     // name_of_element.pop();
-    let name_of_incident_particle = "Si";
+    let name_of_incident_particle = "B";
     let name_of_absorber = "Al";
     modules::bethe_formula::stopping_power_intermediate_energies(&*name_of_incident_particle, name_of_absorber);
 }

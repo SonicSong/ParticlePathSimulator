@@ -25,6 +25,11 @@ use rug::Float;
 
 pub fn look_up_element(symbol_name: &str) -> Option<(Float, Float, Float)> {
     match symbol_name {
+        "B" => Some((
+            bethe_formula::precise("2.370"),     // density
+            bethe_formula::precise("5"),       // Z
+            bethe_formula::precise("10.81"),   // A
+        )),
         "Si" => Some((
             bethe_formula::precise("2.329"),   // density
             bethe_formula::precise("14"),      // Z
