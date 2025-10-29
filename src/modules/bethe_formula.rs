@@ -124,7 +124,7 @@ fn m_e_cpowit() -> Float {
     result
 }
 
-fn density_effect_correction(beta: Float, gamma: Float, plasma: Float, mean_exci_energy: &str) -> Float {
+fn density_effect_correction(beta: Float, gamma: Float, plasma: Float, mean_exci_energy: &str, ) -> Float {
     // Important to calculate Density effect correction
     // NOTE: From what I understand this is basically density effect
     // https://pdg.lbl.gov/2024/reviews/rpp2024-rev-passage-particles-matter.pdf
@@ -147,7 +147,8 @@ fn density_effect_correction(beta: Float, gamma: Float, plasma: Float, mean_exci
 
     // x = log_10 βγ = log_10 (p/Mc)
 
-    let log_beta_gamma: Float = (beta.clone() * gamma.clone()).log10();
+    let log_beta_gamma: Float = (beta.clone() * gamma.clone()).log10(); // x
+    // x1 and x0 are maybe derived from table of muons dE/dx and Range. (example for Al: https://pdg.lbl.gov/2024/AtomicNuclearProperties/MUE/muE_aluminum_Al.pdf)
 
     // I know I need to use Sternheimer parameterization for this but for now it's better than nothing.
     res_beta_gamma_plasma

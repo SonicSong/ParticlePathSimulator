@@ -71,11 +71,44 @@ pub fn look_up_element_mass(symbol_name: &str) -> Option<Float> {
     }
 }
 
-// Add function to calculate density of the material
-
-pub fn multiple_material_density() {
-    // p = m/V equation for the material density
-
+pub fn look_up_element_muon(symbol_name: &str) -> Option<(Float, Float, Float, Float)> {
+    match symbol_name {
+        "B" => Some((
+            bethe_formula::precise("0.0305"),   // x_0
+            bethe_formula::precise("1.9688"),   // x_1
+            bethe_formula::precise("2.8477"),   // C
+            bethe_formula::precise("0.14")      // δ_0
+        )),
+        "Si" => Some((
+            bethe_formula::precise("0.2015"),
+            bethe_formula::precise("2.8716"),
+            bethe_formula::precise("4.4355"),
+            bethe_formula::precise("0.14")
+        )),
+        "C" => Some((
+            bethe_formula::precise("-0.0351"),
+            bethe_formula::precise("2.4860"),
+            bethe_formula::precise("2.9925"),
+            bethe_formula::precise("0.10")
+        )),
+        "Al" => Some((
+            bethe_formula::precise("0.1708"),
+            bethe_formula::precise("3.0127"),
+            bethe_formula::precise("4.2395"),
+            bethe_formula::precise("0.12")
+        )),
+        "Au" => Some((
+            bethe_formula::precise("0.2021"),
+            bethe_formula::precise("3.6979"),
+            bethe_formula::precise("5.5747"),
+            bethe_formula::precise("0.14")
+        )),
+        "Cu" => Some((
+            bethe_formula::precise("-0.0254"),
+            bethe_formula::precise("3.2492"),
+            bethe_formula::precise("4.4190"),
+            bethe_formula::precise("0.08")
+        )),
+        _ => None
+    }
 }
-
-pub fn periodic_table() {}
