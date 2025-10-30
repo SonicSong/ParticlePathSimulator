@@ -1,5 +1,4 @@
 use std::f64::consts;
-use mendeleev::{Element};
 use std::iter::Iterator;
 use modules::periodic_table::periodic_lookup;
 use num::traits::real::Real;
@@ -17,6 +16,59 @@ use crate::modules::periodic_table::mean_excitation_energies::*;
 // https://pdg.lbl.gov/2024/reviews/rpp2024-rev-passage-particles-matter.pdf
 //TODO: Rewrite the entire formula to match for the universal version found on (https://pdg.lbl.gov/rpp/encoders/pdg_note_1901.pdf)
 
+
+// For the ease of mine I simply listed here all the constants and variables used in the Bethe formula calculations
+// Taken from https://pdg.lbl.gov/2024/reviews/rpp2024-rev-passage-particles-matter.pdf
+/*
+    Constants:
+    m_e*c^2 = 0.51099895000 MeV electron mass × c^2
+    r_e = 2.8179403227 fm classical electron radius (fm unit is femtometer = 10^-15 meter)
+    α = 1/137.035999139 fine-structure constant
+    N_A = 6.02214076×10^23 mol^−1 Avogadro constant
+
+    Values:
+    ρ (rho) = density of the absorber in g cm^−3
+    x mass per unit area in g cm^−2
+    M = incident particle mass in MeV/c^2
+    E = incident particle energy γ*M*c^2 in MeV
+    T = kinetic energy (γ -1)*M*c^2 in MeV
+    W_max = maximum possible energy transfer to an electron in single collision in MeV
+    k = bremsstrahlung photon energy in MeV
+    z = charge number of incident particle
+    Z = atomic number of absorber
+    A = atomic mass of absorber in g mol^−1
+    K = 0.307075 MeV mol^−1 cm^2
+    I = mean excitation energy in eV
+    δ(βγ) = density effect correction to ionization energy loss
+    ℏω_p = plasma energy sqrt(ρ*〈Z/A〉) × 28.816 eV
+    N_e = electron density in (units of r_e)^-3
+    w_j = weight fraction of the jth element in a compound or mixture
+    n_j = proportionality number of jth kind of atoms in a compound or mixture
+    X_0 = radiation length of the absorber in g cm^−2
+    E_c = critical energy for electrons in MeV
+    E_μc = critical energy for muons in GeV
+    E_s = scale energy sqrt(4π/α) * m_e * c^2 = 21.2052 MeV
+    R_m = Molière radius in g cm^−2
+*/
+// Based on the above constants and values the Bethe formula can be constructed
+// But also additionally for my ease of use I will simply separate those variables to be "separate" in a way, so I can easily identify which part does what
+// And simply to know which part is responsible for what calculation
+// Also I need to separate which variable is for incident particle and which one is for absorber... It gets confusing okay?
+
+
+/* Absorber:
+    ρ (rho) = density of the absorber in g cm^−3
+    Z = atomic number of absorber
+    A = atomic mass of absorber
+*/
+
+/* Incident Particle:
+    M = incident particle mass in MeV/c^2
+    E = incident particle energy γ*M*c^2 in MeV
+    T = kinetic energy (γ -1)*M*c^2 in MeV
+    W_max = maximum possible energy transfer to an electron in single collision in MeV
+    z = charge number of incident particle
+*/
 use crate::modules;
 use crate::modules::atomic_vars::PRECISION;
 //TODO: Verify data and make sure calculation is correct
@@ -71,16 +123,15 @@ pub fn stopping_power_intermediate_energies(name_of_incident_particle: &str, nam
     println!("Name of incident particle: {}", name_of_incident_particle);
     println!("Name of absorber {}", name_of_absorber);
 
-    let element_exci_energy = match Element::iter().find(|e:&Element|
-        e.symbol().eq_ignore_ascii_case(name_of_absorber) ||
-            e.name().eq_ignore_ascii_case(name_of_absorber)) {
-        Some(e) => e,
-        None => panic!(),
-    };
+    let element_exci_energy = mean_excitation_energy(name_of_absorber).unwrap_or_else(|| {
+        eprintln!("Element {} not found or density is unavailable.", name_of_absorber);
+        precise("0.0")
+    });
 
     let energy: Float = m_e_cpowit();
     let mut de_dx_array: Vec<Float> = vec![];
     let mut velocity: Vec<Float> = vec![];
+    println!("Mean excitation energy of absorber {} : {}", name_of_absorber.clone(), element_exci_energy.clone());
 
     // TODO: Loop for going through various values for BETA and GAMMA. For example Beta = (0.1*C/C) 0.1*C can be considered V
 
@@ -102,7 +153,7 @@ pub fn stopping_power_intermediate_energies(name_of_incident_particle: &str, nam
         // Equation taken from https://pdg.lbl.gov/2024/reviews/rpp2024-rev-passage-particles-matter.pdf at 34.2.3
         // This formula is for Stopping power at intermediate energies
         let de_dx: Float = k_z_two_z_a_1_b_two(name_of_incident_particle, beta.clone(), name_of_absorber) *
-                (0.5 * (twom_e_ctwo_btwo_dtwo_w(beta.clone(), gamma.clone(), energy.clone(), element_exci_energy, name_of_absorber).ln() - beta.clone().pow(2) -
+                (0.5 * (twom_e_ctwo_btwo_dtwo_w(beta.clone(), gamma.clone(), energy.clone(), element_exci_energy.clone(), name_of_absorber).ln() - beta.clone().pow(2) -
                 density_effect_correction(beta.clone(), gamma.clone(), plasma_energy(name_of_incident_particle), name_of_incident_particle))); // Missing for now value of δ(βγ) which is currently just
         de_dx_array.push(de_dx);
     }
@@ -154,7 +205,7 @@ fn density_effect_correction(beta: Float, gamma: Float, plasma: Float, mean_exci
     res_beta_gamma_plasma
 }
 
-fn plasma_energy(name_of_element: &str) -> Float {
+fn plasma_energy(name_of_absorber: &str) -> Float {
     // Important to calculate Density effect correction
     // https://pdg.lbl.gov/2024/reviews/rpp2024-rev-passage-particles-matter.pdf
     // ℏωp = √ρ*〈Z/A〉 × 28.816 eV
@@ -171,13 +222,13 @@ fn plasma_energy(name_of_element: &str) -> Float {
     // Based on the data found for example on https://pdg.lbl.gov/2024/AtomicNuclearProperties/HTML/calcium_fluoride.html it seems like it does provide <Z/A> value
 
     let calc_const: Float = precise("28.816");
-    if let Some((atom_density, atom_number, mass_number)) = periodic_lookup::look_up_element(name_of_element) {
+    if let Some((atom_density, atom_number, mass_number)) = periodic_lookup::look_up_element(name_of_absorber) {
         let mut result: Float = atom_density.clone() * (atom_number.clone() / mass_number.clone());
         result = result.sqrt() * calc_const;
         // println!("Plasma energy: {}", result.clone());
         result
     } else {
-        eprintln!("Element {} not found or density is unavailable.", name_of_element);
+        eprintln!("Element {} not found or density is unavailable.", name_of_absorber);
         precise("0.0")
     }
     // let result: Float = precise("32.86");
@@ -223,7 +274,7 @@ fn k_z_two_z_a_1_b_two(name_of_absorber: &str, beta: Float, name_of_incident_par
     }
 }
 
-fn twom_e_ctwo_btwo_dtwo_w(beta: Float, gamma: Float, m_e_cpowit: Float, element_exci_energy: Element, name_of_incident_particle: &str) -> Float {
+fn twom_e_ctwo_btwo_dtwo_w(beta: Float, gamma: Float, m_e_cpowit: Float, element_exci_energy: Float, name_of_incident_particle: &str) -> Float {
     // 2 * m_e * c^2 * β^2 * γ^2 * W_max
     // / I^2
 

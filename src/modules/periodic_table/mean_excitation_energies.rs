@@ -1,4 +1,3 @@
-use mendeleev::Element;
 use rug::Float;
 use modules::bethe_formula;
 use crate::modules;

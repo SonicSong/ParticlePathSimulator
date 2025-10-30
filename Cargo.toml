@@ -5,6 +5,5 @@ version = "0.0.1"
 edition = "2021"
 
 [dependencies]
-mendeleev = "0.8.4"
 num = "0.4.3"
 rug = "1.28.0"
