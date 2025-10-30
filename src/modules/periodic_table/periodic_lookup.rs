@@ -71,9 +71,40 @@ pub fn look_up_element_mass(symbol_name: &str) -> Option<Float> {
     }
 }
 
+pub fn look_up_element_k_and_a(symbol_name: &str) -> Option<(Float, Float)> {
+    match symbol_name {
+        "B" => Some((
+            bethe_formula::precise("0.56224"),  // a
+            bethe_formula::precise("2.4512"),   // k =m_s
+        )),
+        "Si" => Some((
+            bethe_formula::precise("0.14921"),
+            bethe_formula::precise("3.2546"),
+        )),
+        "C" => Some((
+            bethe_formula::precise("0.20240"),
+            bethe_formula::precise("3.0036"),
+        )),
+        "Al" => Some((
+            bethe_formula::precise("0.08024"),
+            bethe_formula::precise("3.6345"),
+        )),
+        "Au" => Some((
+            bethe_formula::precise("0.09756"),
+            bethe_formula::precise("3.1101"),
+        )),
+        "Cu" => Some((
+            bethe_formula::precise("0.14339"),
+            bethe_formula::precise("2.9044"),
+        )),
+        _ => None
+    }
+}
+
 pub fn look_up_element_muon(symbol_name: &str) -> Option<(Float, Float, Float, Float)> {
     match symbol_name {
         "B" => Some((
+
             bethe_formula::precise("0.0305"),   // x_0
             bethe_formula::precise("1.9688"),   // x_1
             bethe_formula::precise("2.8477"),   // C
