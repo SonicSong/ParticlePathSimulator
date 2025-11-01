@@ -76,6 +76,8 @@ use crate::modules::atomic_vars::PRECISION;
 
 //Constants https://pdg.lbl.gov/2024/reviews/rpp2024-rev-phys-constants.pdf
 
+// IDE reports that this function is being used over 99 times... I think I could cut down with that usage by reworking how periodic lookup works but either way it will be replaced by ANPM crate when it's done
+// And then values returned by ANPM crate will be converted to Float so that rug::Float is used everywhere instead of f64
 pub fn precise(val: &str) -> Float {
     let precision_bits: u32 = PRECISION.load(Ordering::Relaxed) as u32;
     let mut result = Float::new(precision_bits);
@@ -118,12 +120,10 @@ pub fn stopping_power_intermediate_energies(name_of_incident_particle: &str, nam
     // https://pdg.lbl.gov/2024/reviews/rpp2024-rev-passage-particles-matter.pdf
     // Equation 34.5
 
-    let PRECISION_BITS: u32 = crate::modules::atomic_vars::PRECISION.load(Ordering::Relaxed) as u32;
-
     println!("Name of incident particle: {}", name_of_incident_particle);
     println!("Name of absorber {}", name_of_absorber);
 
-    let element_exci_energy = mean_excitation_energy(name_of_absorber).unwrap_or_else(|| {
+    let element_exci_energy = mean_excitation_energy(name_of_absorber).unwrap_or_else(|| { // This is returned in eV, but it should be converted to MeV to not make unit mismatch
         eprintln!("Element {} not found or density is unavailable.", name_of_absorber);
         precise("0.0")
     });
@@ -136,6 +136,9 @@ pub fn stopping_power_intermediate_energies(name_of_incident_particle: &str, nam
     // TODO: Loop for going through various values for BETA and GAMMA. For example Beta = (0.1*C/C) 0.1*C can be considered V
 
     for i in 1i32..1000i32 {
+        // TODO: Verify if the loop values are correct and make sense physically.
+        // TODO: Verify if the step of 0.001 makes sense or should it be smaller/larger
+        // TODO: Verify if the gamma and beta calculations are correct and make sense physically.
         let i_t: Float = precise(&format!("{}", i)) * precise("0.001");
         let beta: Float = (i_t.clone() * light_speed_ret()) / light_speed_ret();
 
@@ -181,10 +184,14 @@ fn density_effect_correction(beta: Float, gamma: Float, plasma: Float, mean_exci
     // https://pdg.lbl.gov/2024/reviews/rpp2024-rev-passage-particles-matter.pdf
     // Equation 34.6
     // δ(βγ)/2 → ln(ℏωp/I) + ln βγ − 1/2
-
-    let logarithm_plasma_energy: Float = (plasma * precise("1.0")).ln();
-    let logarithm_beta_gamma: Float = (beta.clone() * gamma.clone()).ln();
-    let res_beta_gamma_plasma: Float = logarithm_plasma_energy.clone() + logarithm_beta_gamma.clone() - precise("0.5");
+    // No idea if I should use this calculation or just focus on Sternheimer's parametrization... OR HOW IT EVEN WORKS.
+    // let mut logarithm_plasma_energy: Float = precise("1.0");
+    // if let Some(mean_exci_energy_for_plasma) = mean_excitation_energy(mean_exci_energy) {
+    //     logarithm_plasma_energy = (plasma / mean_exci_energy_for_plasma).ln();
+    // }
+    //
+    // let logarithm_beta_gamma: Float = (beta.clone() * gamma.clone()).ln();
+    // let res_beta_gamma_plasma: Float = logarithm_plasma_energy.clone() + logarithm_beta_gamma.clone() - precise("0.5");
 
     // 34.2.5 Density effect
     // PDG: https://pdg.lbl.gov/2024/reviews/rpp2024-rev-passage-particles-matter.pdf
@@ -200,9 +207,39 @@ fn density_effect_correction(beta: Float, gamma: Float, plasma: Float, mean_exci
 
     let log_beta_gamma: Float = (beta.clone() * gamma.clone()).log10(); // x
     // x1 and x0 are maybe derived from table of muons dE/dx and Range. (example for Al: https://pdg.lbl.gov/2024/AtomicNuclearProperties/MUE/muE_aluminum_Al.pdf)
+    let mut res_beta_gamma_sternheimer: Float;
 
+    if let Some((x_0, x_1, c_minus, delta_0)) = periodic_lookup::look_up_element_x_c_delta(mean_exci_energy) {
+        if log_beta_gamma.clone() >= x_1.clone() {
+            println!("Duh. Normal Beta Gamma bigger than x_1 WAS USED");
+            res_beta_gamma_sternheimer = precise("2.0") * precise("10").ln() * log_beta_gamma.clone() - c_minus.clone();
+        } else if x_0.clone() <= log_beta_gamma.clone() && log_beta_gamma.clone() < x_1.clone() {
+            if let Some((a_param, k_param)) = periodic_lookup::look_up_element_k_and_a(mean_exci_energy) {
+                println!("K AND A WERE USED");
+                res_beta_gamma_sternheimer = precise("2.0") * precise("10").ln() * log_beta_gamma.clone() - c_minus.clone() +
+                a_param.clone() * (x_1.clone() - log_beta_gamma.clone()).pow(k_param.clone());
+            } else {
+                println!("Look up element x_c_delta failed...");
+                res_beta_gamma_sternheimer = precise("2.0") * precise("10").ln() * log_beta_gamma.clone() - c_minus.clone();
+            }
+        } else {
+            // TODO: Find a way to differentiate between conductors and nonconductors
+            if delta_0.clone() == precise("0") {
+                println!("delta 0 clone WAS USED");
+                res_beta_gamma_sternheimer = precise("0");
+            } else {
+                println!("delta 0 clone ELSE WAS USED");
+                res_beta_gamma_sternheimer = delta_0.clone() * precise("10").pow(precise("2") * log_beta_gamma.clone() - x_0.clone());
+            }
+        }
+    } else {
+        res_beta_gamma_sternheimer = precise("0");
+    }
+
+    // println!("Parametr sternh: {}", res_beta_gamma_sternheimer.clone()/precise("2"));
     // I know I need to use Sternheimer parameterization for this but for now it's better than nothing.
-    res_beta_gamma_plasma
+    let result = res_beta_gamma_sternheimer / precise("2");
+    result
 }
 
 fn plasma_energy(name_of_absorber: &str) -> Float {
@@ -238,7 +275,7 @@ fn plasma_energy(name_of_absorber: &str) -> Float {
 fn shell_correction() -> Float{
     //TODO: Implement shell correction formula
 
-    precise("0.0")
+    precise("1.0")
 }
 
 fn k_z_two_z_a_1_b_two(name_of_absorber: &str, beta: Float, name_of_incident_particle: &str) -> Float {
@@ -282,14 +319,9 @@ fn twom_e_ctwo_btwo_dtwo_w(beta: Float, gamma: Float, m_e_cpowit: Float, element
     let wmax_result: Float = wmax(beta.clone(), gamma.clone(), m_e_cpowit.clone(), name_of_incident_particle);
     let twom_e_ctwo: Float = precise("2.0") * m_e_cpowit.clone() * beta.clone().pow(2) * gamma.clone().pow(2) * wmax_result;
 
-    // Get mean excitation energy
-    if let Some((excitation_energy)) = mean_excitation_energy(name_of_incident_particle) {
-        let result: Float = twom_e_ctwo.clone() / excitation_energy.clone();
-        result
-    } else {
-        eprintln!("Element {} not found or density is unavaiable. (2 * m_e * c^2 * β^2 * γ^2)", name_of_incident_particle);
-        precise("0.0")
-    }
+    // What the hell... Why did I call mean_excitation_energy when I already passed down element_exci_energy.
+    let result: Float = twom_e_ctwo.clone() / element_exci_energy.clone();
+    result
 }
 
 fn calculate_incident_particle_mass(name_of_incident_particle: &str) -> Float{
@@ -342,8 +374,8 @@ fn wmax(beta: Float, gamma: Float, m_e_cpowit: Float, name_of_incident_particle:
         let two_m_e_ctwo: Float = precise("2.0") * m_e_cpowit.clone() * beta.clone().pow(2) * gamma.clone().pow(2);
         let one_two_gamma_m_e: Float = precise("1.0") + precise("2.0") * gamma * m_e_cpowit.clone() //precise("0.51099895000"))
             / calculate_incident_particle_mass(name_of_incident_particle).clone()
-            + m_e_cpowit.clone() //(precise("0.51099895000")
-            / calculate_incident_particle_mass(name_of_incident_particle).clone();
+            + (m_e_cpowit.clone() //(precise("0.51099895000")
+            / calculate_incident_particle_mass(name_of_incident_particle).clone()).pow(2);
         //TODO: Verify if the incident particle mass is calculated correctly.
         let result = two_m_e_ctwo/one_two_gamma_m_e;
         result

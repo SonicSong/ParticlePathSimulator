@@ -90,6 +90,7 @@ pub fn look_up_element_k_and_a(symbol_name: &str) -> Option<(Float, Float)> {
 
 // Not sure if those values are correct.
 // Need to double-check with NIST database/PDG database and figure out if those values can be used for density effect correction using Sternheimer parametrization.
+// Need a way to detect... Or rather know which element is conductive and which one isn't because it is required to calculate density effect correction.
 pub fn look_up_element_x_c_delta(symbol_name: &str) -> Option<(Float, Float, Float, Float)> {
     match symbol_name {
         "B" => Some((
