@@ -97,7 +97,7 @@ fn pi_number_ret() -> Float {
 }
 
 fn light_speed_ret() -> Float {
-    let light_spd = precise("299792458.0");
+    let light_spd = precise("299792458.0"); // m/s
     light_spd
 }
 
@@ -123,10 +123,13 @@ pub fn stopping_power_intermediate_energies(name_of_incident_particle: &str, nam
     println!("Name of incident particle: {}", name_of_incident_particle);
     println!("Name of absorber {}", name_of_absorber);
 
-    let element_exci_energy = mean_excitation_energy(name_of_absorber).unwrap_or_else(|| { // This is returned in eV, but it should be converted to MeV to not make unit mismatch
+    // element_exci_energy_eV is in eV
+    let element_exci_energy_eV = mean_excitation_energy(name_of_absorber).unwrap_or_else(|| { // This is returned in eV, but it should be converted to MeV to not make unit mismatch
         eprintln!("Element {} not found or density is unavailable.", name_of_absorber);
         precise("0.0")
     });
+    // element_exci_energy is transformed to be in MeV to keep one unit across all the calculations.
+    let element_exci_energy = element_exci_energy_eV * precise("0.000001"); // MeV
 
     let energy: Float = m_e_cpowit();
     let mut de_dx_array: Vec<Float> = vec![];
@@ -140,6 +143,8 @@ pub fn stopping_power_intermediate_energies(name_of_incident_particle: &str, nam
         // TODO: Verify if the step of 0.001 makes sense or should it be smaller/larger
         // TODO: Verify if the gamma and beta calculations are correct and make sense physically.
         let i_t: Float = precise(&format!("{}", i)) * precise("0.001");
+
+        // v = Beta * c → Beta = v/c
         let beta: Float = (i_t.clone() * light_speed_ret()) / light_speed_ret();
 
         let denominator: Float = precise("1.0") - ((i_t.clone() * light_speed_ret()) / light_speed_ret()).pow(2);
@@ -152,7 +157,6 @@ pub fn stopping_power_intermediate_energies(name_of_incident_particle: &str, nam
             gamma = precise("0.0");
             // panic!();
         }
-
         // Equation taken from https://pdg.lbl.gov/2024/reviews/rpp2024-rev-passage-particles-matter.pdf at 34.2.3
         // This formula is for Stopping power at intermediate energies
         let de_dx: Float = k_z_two_z_a_1_b_two(name_of_incident_particle, beta.clone(), name_of_absorber) *
@@ -211,24 +215,24 @@ fn density_effect_correction(beta: Float, gamma: Float, plasma: Float, mean_exci
 
     if let Some((x_0, x_1, c_minus, delta_0)) = periodic_lookup::look_up_element_x_c_delta(mean_exci_energy) {
         if log_beta_gamma.clone() >= x_1.clone() {
-            println!("Duh. Normal Beta Gamma bigger than x_1 WAS USED");
+            // println!("Duh. Normal Beta Gamma bigger than x_1 WAS USED");
             res_beta_gamma_sternheimer = precise("2.0") * precise("10").ln() * log_beta_gamma.clone() - c_minus.clone();
         } else if x_0.clone() <= log_beta_gamma.clone() && log_beta_gamma.clone() < x_1.clone() {
             if let Some((a_param, k_param)) = periodic_lookup::look_up_element_k_and_a(mean_exci_energy) {
-                println!("K AND A WERE USED");
+                // println!("K AND A WERE USED");
                 res_beta_gamma_sternheimer = precise("2.0") * precise("10").ln() * log_beta_gamma.clone() - c_minus.clone() +
                 a_param.clone() * (x_1.clone() - log_beta_gamma.clone()).pow(k_param.clone());
             } else {
-                println!("Look up element x_c_delta failed...");
+                // println!("Look up element x_c_delta failed...");
                 res_beta_gamma_sternheimer = precise("2.0") * precise("10").ln() * log_beta_gamma.clone() - c_minus.clone();
             }
         } else {
             // TODO: Find a way to differentiate between conductors and nonconductors
             if delta_0.clone() == precise("0") {
-                println!("delta 0 clone WAS USED");
+                // println!("delta 0 clone WAS USED");
                 res_beta_gamma_sternheimer = precise("0");
             } else {
-                println!("delta 0 clone ELSE WAS USED");
+                // println!("delta 0 clone ELSE WAS USED");
                 res_beta_gamma_sternheimer = delta_0.clone() * precise("10").pow(precise("2") * log_beta_gamma.clone() - x_0.clone());
             }
         }
