@@ -69,6 +69,23 @@ use crate::modules::periodic_table::mean_excitation_energies::*;
     W_max = maximum possible energy transfer to an electron in single collision in MeV
     z = charge number of incident particle
 */
+
+/*
+https://www.hep.shef.ac.uk/edaw/PHY206/Site/2012_course_files/phy206rlec1.pdf
+!!!!!!!
+Heinous crime against physics number 4 Conversion
+of energies in eV, MeV, or GeV, into joules (J), masses in
+eV/c2, MeV/c2, GeV/c2 into kg, and momenta in eV/c,
+MeV/c and GeV/c into kg m s−1, performance of relativis-
+tic calculations in inappropriate SI units, then attempts to
+convert the result back into electron volts. In over 50% of
+cases, this results in the wrong answer, usually by one or
+several factors of c, so the answer will be off by about 108,
+1016, etc. And, the calculations in SI units are far longer
+and therefore waste your precious time.
+!!!!!!!
+*/
+
 use crate::modules;
 use crate::modules::atomic_vars::PRECISION;
 //TODO: Verify data and make sure calculation is correct
@@ -145,8 +162,10 @@ pub fn stopping_power_intermediate_energies(name_of_incident_particle: &str, nam
         let i_t: Float = precise(&format!("{}", i)) * precise("0.001");
 
         // v = Beta * c → Beta = v/c
+        // Beta and Gamma https://www.hep.shef.ac.uk/edaw/PHY206/Site/2012_course_files/phy206rlec1.pdf
         let beta: Float = (i_t.clone() * light_speed_ret()) / light_speed_ret();
 
+        // Gamma = 1/sqrt(1 - Beta^2)
         let denominator: Float = precise("1.0") - ((i_t.clone() * light_speed_ret()) / light_speed_ret()).pow(2);
         let gamma: Float;
         let velocity_cutoff: Float = precise("0.999");

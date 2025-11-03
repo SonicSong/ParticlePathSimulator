@@ -20,6 +20,7 @@ ParticlePathSimulator is an open scientific project. It exists to advance public
 - https://indico.cern.ch/event/825436/contributions/3487429/attachments/1879446/3096088/densityeffecttalk.pdf
 - https://pdg.lbl.gov/2024/reviews/rpp2024-rev-phys-constants.pdf
 - https://arxiv.org/abs/2201.05791
+- https://www.hep.shef.ac.uk/edaw/PHY206/Site/2012_course_files/phy206rlec1.pdf
 
 ## Project Philosophy
 PPS is not a commercial product, nor a school assignment.  
