@@ -159,17 +159,17 @@ pub fn stopping_power_intermediate_energies(name_of_incident_particle: &str, nam
         // TODO: Verify if the loop values are correct and make sense physically.
         // TODO: Verify if the step of 0.001 makes sense or should it be smaller/larger
         // TODO: Verify if the gamma and beta calculations are correct and make sense physically.
-        let i_t: Float = precise(&format!("{}", i)) * precise("0.001");
+        let i_v: Float = precise(&format!("{}", i)) * precise("0.001");
 
         // v = Beta * c → Beta = v/c
         // Beta and Gamma https://www.hep.shef.ac.uk/edaw/PHY206/Site/2012_course_files/phy206rlec1.pdf
-        let beta: Float = (i_t.clone() * light_speed_ret()) / light_speed_ret();
+        let beta: Float = (i_v.clone() * light_speed_ret()) / light_speed_ret();
 
         // Gamma = 1/sqrt(1 - Beta^2)
-        let denominator: Float = precise("1.0") - ((i_t.clone() * light_speed_ret()) / light_speed_ret()).pow(2);
+        let denominator: Float = precise("1.0") - beta.clone().pow(2);
         let gamma: Float;
         let velocity_cutoff: Float = precise("0.999");
-        if denominator > 0.0  && i_t.clone() <= velocity_cutoff {
+        if denominator > 0.0  && i_v.clone() <= velocity_cutoff {
             gamma = precise("1.0") / denominator.sqrt();
             velocity.push(gamma.clone());
         } else {

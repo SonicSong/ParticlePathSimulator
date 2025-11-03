@@ -20,7 +20,6 @@ fn main() {
     //Switching to rug::float "fixes" problem of IEEE754 by having better precision while working on float values
 
     // let PRECISION_BITS: u32 = PRECISION.load(Ordering::Relaxed) as u32;
-    //
     // let TEST_PRECISION = Float::with_val(256, 0.101);
     //
     // let mut PI_NUMB = Float::new(PRECISION_BITS);
