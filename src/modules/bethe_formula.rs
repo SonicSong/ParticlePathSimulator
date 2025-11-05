@@ -150,7 +150,7 @@ pub fn stopping_power_intermediate_energies(name_of_incident_particle: &str, nam
 
     let energy: Float = m_e_cpowit();
     let mut de_dx_array: Vec<Float> = vec![];
-    let mut velocity: Vec<Float> = vec![];
+    let mut gamma_list: Vec<Float> = vec![];
     println!("Mean excitation energy of absorber {} : {}", name_of_absorber.clone(), element_exci_energy.clone());
 
     // TODO: Loop for going through various values for BETA and GAMMA. For example Beta = (0.1*C/C) 0.1*C can be considered V
@@ -171,7 +171,11 @@ pub fn stopping_power_intermediate_energies(name_of_incident_particle: &str, nam
         let velocity_cutoff: Float = precise("0.999");
         if denominator > 0.0  && i_v.clone() <= velocity_cutoff {
             gamma = precise("1.0") / denominator.sqrt();
-            velocity.push(gamma.clone());
+            // println!("Beta value: {}", beta.clone());
+            // println!("Gamma value: {}", gamma.clone());
+            // Beta and Gamma values show that they are correct and within what is expected
+            
+            gamma_list.push(gamma.clone());
         } else {
             gamma = precise("0.0");
             // panic!();
@@ -184,7 +188,7 @@ pub fn stopping_power_intermediate_energies(name_of_incident_particle: &str, nam
         de_dx_array.push(de_dx);
     }
     println!("<-dE/dx>: {:?}", de_dx_array);
-    // println!("Velocity: {:?}", velocity);
+    // println!("Gamma: {:?}", gamma_list);
 
     // println!("dE/dx:  J/m");
 }
