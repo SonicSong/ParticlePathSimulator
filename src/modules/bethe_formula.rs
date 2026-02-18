@@ -80,8 +80,8 @@ MeV/c and GeV/c into kg m s−1, performance of relativis-
 tic calculations in inappropriate SI units, then attempts to
 convert the result back into electron volts. In over 50% of
 cases, this results in the wrong answer, usually by one or
-several factors of c, so the answer will be off by about 108,
-1016, etc. And, the calculations in SI units are far longer
+several factors of c, so the answer will be off by about 10^8,
+10^16, etc. And, the calculations in SI units are far longer
 and therefore waste your precious time.
 !!!!!!!
 */
@@ -142,7 +142,7 @@ pub fn stopping_power_intermediate_energies(name_of_incident_particle: &str, nam
 
     // element_exci_energy_eV is in eV
     let element_exci_energy_eV = mean_excitation_energy(name_of_absorber).unwrap_or_else(|| { // This is returned in eV, but it should be converted to MeV to not make unit mismatch
-        eprintln!("Element {} not found or density is unavailable.", name_of_absorber);
+        eprintln!("Element {} not found or density is unavailable (Absorber Exci).", name_of_absorber);
         precise("0.0")
     });
     // element_exci_energy is transformed to be in MeV to keep one unit across all the calculations.
@@ -236,34 +236,40 @@ fn density_effect_correction(beta: Float, gamma: Float, plasma: Float, mean_exci
     // x1 and x0 are maybe derived from table of muons dE/dx and Range. (example for Al: https://pdg.lbl.gov/2024/AtomicNuclearProperties/MUE/muE_aluminum_Al.pdf)
     let mut res_beta_gamma_sternheimer: Float;
 
+    // FIXME: Fails at getting the data from look_up_element_x_c_delta
     if let Some((x_0, x_1, c_minus, delta_0)) = periodic_lookup::look_up_element_x_c_delta(mean_exci_energy) {
+        println!("x_0: {}", x_0.clone());
+        println!("x_1: {}", x_1.clone());
+        println!("c_min: {}", c_minus.clone());
+        println!("delta_0: {}", delta_0.clone());
         if log_beta_gamma.clone() >= x_1.clone() {
-            // println!("Duh. Normal Beta Gamma bigger than x_1 WAS USED");
+            println!("Duh. Normal Beta Gamma bigger than x_1 WAS USED");
             res_beta_gamma_sternheimer = precise("2.0") * precise("10").ln() * log_beta_gamma.clone() - c_minus.clone();
         } else if x_0.clone() <= log_beta_gamma.clone() && log_beta_gamma.clone() < x_1.clone() {
             if let Some((a_param, k_param)) = periodic_lookup::look_up_element_k_and_a(mean_exci_energy) {
-                // println!("K AND A WERE USED");
+                println!("K AND A WERE USED");
                 res_beta_gamma_sternheimer = precise("2.0") * precise("10").ln() * log_beta_gamma.clone() - c_minus.clone() +
                 a_param.clone() * (x_1.clone() - log_beta_gamma.clone()).pow(k_param.clone());
             } else {
-                // println!("Look up element x_c_delta failed...");
+                println!("Look up element x_c_delta failed...");
                 res_beta_gamma_sternheimer = precise("2.0") * precise("10").ln() * log_beta_gamma.clone() - c_minus.clone();
             }
         } else {
             // TODO: Find a way to differentiate between conductors and nonconductors
             if delta_0.clone() == precise("0") {
-                // println!("delta 0 clone WAS USED");
+                println!("delta 0 clone WAS USED");
                 res_beta_gamma_sternheimer = precise("0");
             } else {
-                // println!("delta 0 clone ELSE WAS USED");
+                println!("delta 0 clone ELSE WAS USED");
                 res_beta_gamma_sternheimer = delta_0.clone() * precise("10").pow(precise("2") * log_beta_gamma.clone() - x_0.clone());
             }
         }
     } else {
+        println!("something did go wrong and final else with val 0 was usedx");
         res_beta_gamma_sternheimer = precise("0");
     }
 
-    // println!("Parametr sternh: {}", res_beta_gamma_sternheimer.clone()/precise("2"));
+    println!("Parametr sternh: {}", res_beta_gamma_sternheimer.clone()/precise("2"));
     // I know I need to use Sternheimer parameterization for this but for now it's better than nothing.
     let result = res_beta_gamma_sternheimer / precise("2");
     result
@@ -292,7 +298,7 @@ fn plasma_energy(name_of_absorber: &str) -> Float {
         // println!("Plasma energy: {}", result.clone());
         result
     } else {
-        eprintln!("Element {} not found or density is unavailable.", name_of_absorber);
+        eprintln!("Element {} not found or density is unavailable. (Plasma)", name_of_absorber);
         precise("0.0")
     }
     // let result: Float = precise("32.86");
@@ -333,7 +339,7 @@ fn k_z_two_z_a_1_b_two(name_of_absorber: &str, beta: Float, name_of_incident_par
         let result: Float = k_z_two * z_by_a * one_by_beta;
         result
     } else {
-        eprintln!("Element {} not found or density is unavailable.", name_of_absorber);
+        eprintln!("Element {} not found or density is unavailable. (K_Z_TWO)", name_of_absorber);
         precise("0.0")
     }
 }

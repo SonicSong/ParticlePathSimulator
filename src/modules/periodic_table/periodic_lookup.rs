@@ -12,6 +12,11 @@ use rug::Float;
 
 pub fn look_up_element(symbol_name: &str) -> Option<(Float, Float, Float)> {
     match symbol_name {
+        "He" => Some((
+            bethe_formula::precise("1.663e-4"), // density
+            bethe_formula::precise("2"), // atomic number
+            bethe_formula::precise("4.002602") // amu
+        )),
         "B" => Some((
             bethe_formula::precise("2.370"),     // density
             bethe_formula::precise("5"),       // Z
@@ -60,6 +65,10 @@ pub fn look_up_element_mass(symbol_name: &str) -> Option<Float> {
 
 pub fn look_up_element_k_and_a(symbol_name: &str) -> Option<(Float, Float)> {
     match symbol_name {
+        "He" => Some((
+            bethe_formula::precise("0.13443"),
+            bethe_formula::precise("5.8347"),
+        )),
         "B" => Some((
             bethe_formula::precise("0.56224"),  // a
             bethe_formula::precise("2.4512"),   // k =m_s
